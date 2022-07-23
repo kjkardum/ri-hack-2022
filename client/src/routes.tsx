@@ -10,12 +10,16 @@ import NotFound from './pages/Page404';
 import Register from './pages/Register';
 import Products from './pages/Products';
 import DashboardApp from './pages/DashboardApp';
+import HomePage from "./pages/HomePage";
 
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
   return useRoutes([
+    {
+      path: '/',
+    },
     {
       path: '/dashboard',
       element: <DashboardLayout />,
@@ -30,7 +34,8 @@ export default function Router() {
       path: '/',
       element: <LogoOnlyLayout />,
       children: [
-        { path: '/', element: <Navigate to="/dashboard/app" /> },
+        { path: '/', element: <Navigate to="/home" /> },
+        { path: '/home', element: <HomePage /> },
         { path: 'login', element: <Login /> },
         { path: 'register', element: <Register /> },
         { path: '404', element: <NotFound /> },
