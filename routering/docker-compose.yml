@@ -1,0 +1,7 @@
+version: '3.4.1'
+services:
+  routing-app:
+    build: ./app
+    container_name: routing-app
+    ports:
+      - "5000:5000"
