@@ -1,22 +1,21 @@
-from socket import timeout
 from networkx import DiGraph
 from vrpy import VehicleRoutingProblem
 import asyncio
-import aiohttp
-from aiohttp import ClientSession, ClientConnectorError
-from pprint import pprint
-import random
+# import aiohttp
+# from pprint import pprint
+# import random
 
-import time
+# import time
+
+from async_fetcher import Async_Fetcher, OSRM_URL
 
 import sys
 
-OSRM_URL = "http://127.0.0.1:5001"
 
 # vrp_fast = VehicleRoutingProblem(
 
 
-class Vrp:
+class Vrp(Async_Fetcher):
     def __init__(self, depot: tuple, stops: list, demands: list):
         self.depot = depot
         self.stops = [depot] + stops
@@ -43,7 +42,10 @@ class Vrp:
             self.graph, load_capacity=capacity, num_vehicles=num_vehicles)
 
         # prob.num_vehicles = 2
-        prob.solve(time_limit=1)
+        try:
+            prob.solve(time_limit=1)
+        except:
+            return {"error": "cant solve"}
 
         # print(self.stops)
 
@@ -105,43 +107,6 @@ class Vrp:
             for y in range(len(self.stops) - 1):
                 self.graph.add_edge(
                     x, y, cost=res[(1+x, 1+y)])
-
-    async def fetch_html(self, url: str, session: ClientSession, key: tuple) -> tuple:
-        try:
-            resp = await session.request(method="GET", url=url)
-        except ClientConnectorError:
-            return (url, 404, key)
-
-        res = await resp.json()
-        dist = 0
-        for leg in res["routes"][0]["legs"]:
-            dist += leg["distance"]
-
-        return (resp.status, key, dist, res["routes"][0]["geometry"])
-
-    async def make_requests_dist(self, urls: dict) -> list:
-        # print(urls)
-        async with ClientSession() as session:
-            tasks = []
-            for key, url in urls.items():
-                tasks.append(
-                    self.fetch_html(url=url, session=session, key=key)
-                )
-            results = await asyncio.gather(*tasks)
-
-        return {x[1]: x[2] for x in results}
-
-    async def make_requests_route(self, urls: dict) -> list:
-        # print(urls)
-        async with ClientSession() as session:
-            tasks = []
-            for key, url in urls.items():
-                tasks.append(
-                    self.fetch_html(url=url, session=session, key=key)
-                )
-            results = await asyncio.gather(*tasks)
-
-        return {x[1]: x[3]["coordinates"] for x in results}
 
 
 # if __name__ == "__main__":

@@ -1,7 +1,25 @@
 version: '3.4.1'
+
+networks:
+  local:
+    driver: bridge
+
 services:
   routing-app:
     build: ./app
     container_name: routing-app
     ports:
       - "5000:5000"
+    networks:
+      - local
+  osrm:
+    image: osrm/osrm-backend
+    container_name: osrm
+    restart: always
+    ports:
+      - 5001:5001
+    volumes:
+      - ./osrm/data:/data
+    command: "osrm-routed -p 5001 --max-matching-size 10000 --max-table-size 10000 --max-viaroute-size 10000 --algorithm ch /data/map.osrm > /dev/null"
+    networks:
+      - local

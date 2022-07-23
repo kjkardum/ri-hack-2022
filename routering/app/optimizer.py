@@ -10,7 +10,7 @@ class Optimizer:
         self.buildings = buildings
 
     def dist_multiplier(self, dist: float) -> float:
-        "Fallof function for distance"
+        "Falloff function for distance"
 
         return 1 / (1 + dist / 100)
 
