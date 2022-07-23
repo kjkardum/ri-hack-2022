@@ -10,6 +10,7 @@ import Logo from '../components/Logo';
 // sections
 import { LoginForm } from '../sections/auth/login';
 import AuthSocial from '../sections/auth/AuthSocial';
+import NativeMap from "../components/NativeMap";
 
 // ----------------------------------------------------------------------
 
@@ -80,7 +81,7 @@ export default function HomePage() {
                 <Container>
                     <ContentStyle>
 
-                        Home
+                        <NativeMap lines={[]} points={[]} onClickFunc={() => null} width={100} height={100}></NativeMap>
 
                     </ContentStyle>
                 </Container>

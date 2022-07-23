@@ -1,4 +1,4 @@
 export interface IContainerLocation {
-    Latitude: number;
-    Longitude: number;
+    latitude: number;
+    longitude: number;
 }

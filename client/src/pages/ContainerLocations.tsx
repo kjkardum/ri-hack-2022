@@ -27,7 +27,7 @@ import SearchNotFound from '../components/SearchNotFound';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
 // mock
 import USERLIST from '../_mock/user';
-import {GridColumns} from "@mui/x-data-grid";
+import {DataGrid, GridColumns} from "@mui/x-data-grid";
 import {IContainerLocation} from "../types/IContainerLocation";
 
 // ----------------------------------------------------------------------
@@ -136,7 +136,7 @@ export default function User() {
 
     const [rows, setRows] = useState(filteredUsers);
     const columns: GridColumns<IContainerLocation> = [
-        { id: 'name', label: 'Name', alignRight: false },
+
     ];
 
 
