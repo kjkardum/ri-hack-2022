@@ -1,143 +1,112 @@
-import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import {Link as RouterLink} from 'react-router-dom';
 // material
 import {
-    Card,
-    Table,
-    Stack,
-    Avatar,
     Button,
-    Checkbox,
-    TableRow,
-    TableBody,
-    TableCell,
+    Card,
     Container,
-    Typography,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    Stack,
     TableContainer,
-    TablePagination,
+    TextField,
+    Typography,
 } from '@mui/material';
 // components
 import Page from '../components/Page';
 import Label from '../components/Label';
 import Scrollbar from '../components/Scrollbar';
 import Iconify from '../components/Iconify';
-import SearchNotFound from '../components/SearchNotFound';
-import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
 // mock
-import USERLIST from '../_mock/user';
-import {DataGrid, GridColumns} from "@mui/x-data-grid";
+import {
+    DataGrid,
+    GridColumns,
+    GridToolbarColumnsButton,
+    GridToolbarContainer,
+    GridToolbarDensitySelector, GridValueGetterParams
+} from "@mui/x-data-grid";
 import {IContainerLocation} from "../types/IContainerLocation";
+import {useSnackbar} from 'notistack';
+import {GarbageContainerType, GarbageContainerTypeString, IGarbageContainer} from "../types/IGarbageContainer";
 
 // ----------------------------------------------------------------------
-
-const TABLE_HEAD = [
-    { id: 'name', label: 'Name', alignRight: false },
-    { id: 'company', label: 'Company', alignRight: false },
-    { id: 'role', label: 'Role', alignRight: false },
-    { id: 'isVerified', label: 'Verified', alignRight: false },
-    { id: 'status', label: 'Status', alignRight: false },
-    { id: '' },
-];
-
-// ----------------------------------------------------------------------
-
-function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
-        return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-        return 1;
-    }
-    return 0;
-}
-
-function getComparator(order, orderBy) {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function applySortFilter(array, comparator, query) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) return order;
-        return a[1] - b[1];
-    });
-    if (query) {
-        return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-    }
-    return stabilizedThis.map((el) => el[0]);
-}
 
 export default function ContainerLocations() {
+    const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState<string>("");
+    const [delayedSearch, setDelayedSearch] = useState<string>("");
+    const {enqueueSnackbar} = useSnackbar();
+    useEffect(() => {
+        let timeout = setTimeout(() => {
+            setDelayedSearch(search);
+        }, 200);
+        return () => clearTimeout(timeout);
+    }, [search]);
+    const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+    const [sortOrder, setSortOrder] = useState<string | null | undefined>(undefined);
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+    const [filterBy, setFilterBy] = useState<GarbageContainerType | null>(null);
+    const [rowCount, setRowCount] = useState(0);
+    const [rows, setRows] = useState<Array<IContainerLocation>>([]);
 
-    const [order, setOrder] = useState('asc');
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            /*
+            const {data} = await getAssets({
+                page,
+                pageSize,
+                sortBy: sortBy ?? '',
+                sortOrder: sortOrder ?? '',
+                term: delayedSearch,
+                assetType: filterBy ?? undefined
+            });*/
+            const data: IContainerLocation[] = [
+                {
+                    id: "test123",
+                    latitude: 32243.32,
+                    longitude: 32243.32,
+                },
+                {
+                    id: "te34543st123",
+                    latitude: 32243.32,
+                    longitude: 32243.32,
+                },
+                {
+                    id: "test14323",
+                    latitude: 32243.32,
+                    longitude: 32243.32,
+                }
+            ]
 
-    const [selected, setSelected] = useState([]);
-
-    const [orderBy, setOrderBy] = useState('name');
-
-    const [filterName, setFilterName] = useState('');
-
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
-    };
-
-    const handleSelectAllClick = (event) => {
-        if (event.target.checked) {
-            const newSelecteds = USERLIST.map((n) => n.name);
-            setSelected(newSelecteds);
-            return;
+            setRows(data);
+            setRowCount(data.length);
+        } catch (e) {
+            enqueueSnackbar("Error fetching data", {variant: 'error'});
+        } finally {
+            setLoading(false);
         }
-        setSelected([]);
-    };
-
-    const handleClick = (event, name) => {
-        const selectedIndex = selected.indexOf(name);
-        let newSelected = [];
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, name);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-        }
-        setSelected(newSelected);
-    };
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
+    }
+    useEffect(() => {
+        loadData();
+    }, [page, pageSize, sortBy, sortOrder, delayedSearch, filterBy]);
+    useEffect(() => {
         setPage(0);
-    };
+    }, [sortBy, sortOrder, delayedSearch, filterBy])
 
-    const handleFilterByName = (event) => {
-        setFilterName(event.target.value);
-    };
+    const handleEdit = (id: number) => {
+//         navigate(`/dashboard/assets/${id}`);
+    }
 
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-    const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
-
-    const isUserNotFound = filteredUsers.length === 0;
-
-    const [rows, setRows] = useState(filteredUsers);
     const columns: GridColumns<IContainerLocation> = [
-
-    ];
+        {field: 'id', headerName: 'Id', editable: false, hideable: true, flex: 1},
+        {field: 'latitude', headerName: 'Latitude', editable: false, hideable: true, flex: 1},
+        {field: 'longitude', headerName: 'Longitude', editable: false, hideable: true, flex: 1},
+    ]
 
 
     return (
@@ -145,33 +114,98 @@ export default function ContainerLocations() {
             <Container>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
-                        User
+                        Garbage Containers
                     </Typography>
-                    <Button variant="contained" component={RouterLink} to="#" startIcon={<Iconify icon="eva:plus-fill" />}>
-                        New User
+                    <Button variant="contained" component={RouterLink} to="#"
+                            startIcon={<Iconify icon="eva:plus-fill"/>}>
+                        Add Garbage Container
                     </Button>
                 </Stack>
 
                 <Card>
-                    <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
-
                     <Scrollbar>
-                        <TableContainer sx={{ minWidth: 800 }}>
-                            <DataGrid rows={rows} columns={columns} />
+                        <TableContainer sx={{minWidth: 800}}>
+                            <DataGrid
+                                sx={{mb: 1, minWidth: 960}}
+                                rows={rows}
+                                rowCount={rowCount}
+                                loading={loading}
+                                rowsPerPageOptions={[10, 20, 50, 100]}
+                                pagination
+                                page={page}
+                                pageSize={pageSize}
+                                paginationMode='server'
+                                onPageChange={(newPage) => setPage(newPage)}
+                                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                                sortingMode='server'
+                                onSortModelChange={(newSortModel) => {
+                                    setSortBy(newSortModel.at(0)?.field)
+                                    setSortOrder(newSortModel.at(0)?.sort);
+                                }}
+
+                                columns={columns}
+                                disableSelectionOnClick
+                                autoHeight
+                                onCellDoubleClick={(params) => handleEdit(params.row.id)}
+                                components={{
+                                    Toolbar: CustomToolbar,
+                                }}
+                                componentsProps={{
+                                    toolbar: {
+                                        value: search,
+                                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => setSearch(event.target.value),
+                                        onTagSelected: (tag: GarbageContainerType | null) => setFilterBy((tag)),
+                                    }
+                                }}
+                                initialState={{
+                                    columns: {
+                                        columnVisibilityModel: {
+                                        }
+                                    }
+                                }}/>
                         </TableContainer>
                     </Scrollbar>
-
-                    <TablePagination
-                        rowsPerPageOptions={[5, 10, 25]}
-                        component="div"
-                        count={USERLIST.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
                 </Card>
             </Container>
         </Page>
+    );
+}
+
+
+function CustomToolbar(props: any) {
+    const [filterValue, setFilterValue] = useState<string | GarbageContainerType>('None');
+    useEffect(() => {
+        props.onTagSelected(filterValue !== 'None' ? (filterValue as GarbageContainerType) ?? null : null);
+    }, [filterValue]);
+    return (
+        <GridToolbarContainer>
+            <Stack direction='row' spacing={2}>
+                <GridToolbarColumnsButton/>
+                <GridToolbarDensitySelector/>
+                <TextField
+                    size='small'
+                    placeholder='Search'
+                    value={props.value}
+                    onChange={props.onChange}
+                    type='search'/>
+                <FormControl sx={{minWidth: 400}} size='small'>
+                    <InputLabel id="selectAssetTypeLabel">Asset Type</InputLabel>
+                    <Select
+                        labelId="selectAssetTypeLabel"
+                        label="Asset Type"
+                        size='small'
+                        value={filterValue}
+                        onChange={(e) => setFilterValue(e.target.value)}
+                    >
+                        <MenuItem value={"None"}>
+                            <em>None</em>
+                        </MenuItem>
+                        {Object.values(GarbageContainerType).filter(t => !isNaN(Number(t))).map(t => t as GarbageContainerType).map((type) => (
+                            <MenuItem key={type} value={type}>{GarbageContainerTypeString(type)}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Stack>
+        </GridToolbarContainer>
     );
 }
