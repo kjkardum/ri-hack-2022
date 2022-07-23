@@ -207,6 +207,9 @@ namespace RiHackApi.Persistence.Migrations
                     b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<double>("MaxWeight")
+                        .HasColumnType("float");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
