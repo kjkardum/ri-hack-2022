@@ -10,4 +10,8 @@
       <ProjectReference Include="..\RiHackApi.Common\RiHackApi.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="TypeGen" Version="3.0.0" />
+    </ItemGroup>
+
 </Project>
