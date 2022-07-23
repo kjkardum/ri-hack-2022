@@ -75,10 +75,10 @@ jobs:
   - script: npm install -g yarn
     displayName: 'Install yarn'
     workingDirectory: client
-  - script: npm install
+  - script: yarn
     displayName: 'Install dependencies'
     workingDirectory: client
-  - script: npm run build
+  - script: yarn build
     displayName: 'Build'
     workingDirectory: client
 #  - task: AzureFileCopy@4
@@ -96,5 +96,5 @@ jobs:
       azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
-      inlineScript: az storage blob upload-batch -d "$web" --account-name "rihack" -s "client/build/*"
+      inlineScript: az storage blob upload-batch -d "$web" --account-name "rihack" -s "client/build/*" --overwrite=true --recursive
       
