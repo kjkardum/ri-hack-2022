@@ -2,8 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using RiHackApi.Common.Constants;
 using RiHackApi.Common.Interfaces;
 using RiHackApi.Common.Requests;
 using RiHackApi.Common.Responses;
@@ -143,5 +145,17 @@ public class AccountService : IAccountService
     {
         var user = await _userManager.FindByEmailAsync(email);
         return user != null;
+    }
+
+    public async Task SetAsAdmin(Guid userId)
+    {
+        var account = await _dbContext.Users.FirstAsync(u => u.Id == userId);
+        await _userManager.AddToRoleAsync(account, BaseRoles.Admin);
+    }
+
+    public async Task RevokeAdmin(Guid userId)
+    {
+        var account = await _dbContext.Users.FirstAsync(u => u.Id == userId);
+        await _userManager.RemoveFromRoleAsync(account, BaseRoles.Admin);
     }
 }
