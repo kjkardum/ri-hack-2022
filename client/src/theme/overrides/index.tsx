@@ -16,12 +16,12 @@ export default function ComponentsOverrides(theme) {
   return Object.assign(
     Card(theme),
     Input(theme),
-    Paper(theme),
+    Paper(),
     Button(theme),
     Tooltip(theme),
     Backdrop(theme),
     Typography(theme),
-    CssBaseline(theme),
+    CssBaseline(),
     Autocomplete(theme)
   );
 }

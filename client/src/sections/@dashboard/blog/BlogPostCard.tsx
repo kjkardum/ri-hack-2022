@@ -137,6 +137,7 @@ export default function BlogPostCard({ post, index }) {
           </Typography>
 
           <TitleStyle
+            // @ts-ignore
             to="#"
             color="inherit"
             variant="subtitle2"

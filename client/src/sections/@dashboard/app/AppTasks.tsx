@@ -16,7 +16,7 @@ AppTasks.propTypes = {
   list: PropTypes.array.isRequired,
 };
 
-export default function AppTasks({ title, subheader, list, ...other }) {
+export default function AppTasks({ title, subheader, list, ...other }: any) {
   const { control } = useForm({
     defaultValues: {
       taskCompleted: ['2'],
@@ -167,6 +167,7 @@ function MoreMenuButton({ actions, open, onOpen, onClose }) {
         onClose={onClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        // @ts-ignore
         arrow="right-top"
         sx={{
           mt: -0.5,

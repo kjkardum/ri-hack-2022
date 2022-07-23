@@ -61,6 +61,8 @@ function NavItem({ item, active }) {
   if (children) {
     return (
       <>
+        {/*
+        //@ts-ignore */}
         <ListItemStyle
           onClick={handleOpen}
           sx={{
@@ -83,6 +85,7 @@ function NavItem({ item, active }) {
               const isActiveSub = active(path);
 
               return (
+                  //@ts-ignore
                 <ListItemStyle
                   key={title}
                   component={RouterLink}
@@ -121,6 +124,7 @@ function NavItem({ item, active }) {
   }
 
   return (
+      //@ts-ignore
     <ListItemStyle
       component={RouterLink}
       to={path}

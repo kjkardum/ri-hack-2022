@@ -30,7 +30,7 @@ AppWidgetSummary.propTypes = {
   sx: PropTypes.object,
 };
 
-export default function AppWidgetSummary({ title, total, icon, color = 'primary', sx, ...other }) {
+export default function AppWidgetSummary({ title, total, icon, color = 'primary', sx, ...other }: any) {
   return (
     <Card
       sx={{

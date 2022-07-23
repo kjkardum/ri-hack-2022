@@ -39,7 +39,7 @@ AppCurrentVisits.propTypes = {
   chartData: PropTypes.array,
 };
 
-export default function AppCurrentVisits({ title, subheader, chartColors, chartData, ...other }) {
+export default function AppCurrentVisits({ title, subheader, chartColors, chartData, ...other }: any) {
   const theme = useTheme();
 
   const chartLabels = chartData.map((i) => i.label);
@@ -71,6 +71,8 @@ export default function AppCurrentVisits({ title, subheader, chartColors, chartD
       <CardHeader title={title} subheader={subheader} />
 
       <ChartWrapperStyle dir="ltr">
+        {/*
+        // @ts-ignore */}
         <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={280} />
       </ChartWrapperStyle>
     </Card>

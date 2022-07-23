@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import merge from 'lodash/merge';
 import ReactApexChart from 'react-apexcharts';
 // @mui
@@ -9,12 +8,6 @@ import { fNumber } from '../../../utils/formatNumber';
 import { BaseOptionChart } from '../../../components/chart';
 
 // ----------------------------------------------------------------------
-
-AppConversionRates.propTypes = {
-  title: PropTypes.string,
-  subheader: PropTypes.string,
-  chartData: PropTypes.array.isRequired,
-};
 
 export default function AppConversionRates({ title, subheader, chartData, ...other }) {
   const chartLabels = chartData.map((i) => i.label);
@@ -44,6 +37,8 @@ export default function AppConversionRates({ title, subheader, chartData, ...oth
       <CardHeader title={title} subheader={subheader} />
 
       <Box sx={{ mx: 3 }} dir="ltr">
+        {/*
+        // @ts-ignore */}
         <ReactApexChart type="bar" series={[{ data: chartSeries }]} options={chartOptions} height={364} />
       </Box>
     </Card>

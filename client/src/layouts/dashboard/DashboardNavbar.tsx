@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 // material
 import { alpha, styled } from '@mui/material/styles';
 import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
@@ -36,11 +35,8 @@ const ToolbarStyle = styled(Toolbar)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-DashboardNavbar.propTypes = {
-  onOpenSidebar: PropTypes.func,
-};
 
-export default function DashboardNavbar({ onOpenSidebar }) {
+export default function DashboardNavbar({ onOpenSidebar }: { onOpenSidebar: () => any }) {
   return (
     <RootStyle>
       <ToolbarStyle>

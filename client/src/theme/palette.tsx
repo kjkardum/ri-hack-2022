@@ -124,4 +124,11 @@ const palette = {
   },
 };
 
+
+declare module '@mui/material/styles' {
+  interface Palette {
+    chart: any;
+  }
+}
+
 export default palette;

@@ -14,6 +14,7 @@ export function RHFCheckbox({ name, ...other }) {
   const { control } = useFormContext();
 
   return (
+      // @ts-ignore
     <FormControlLabel
       control={
         <Controller

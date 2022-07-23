@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 // material
-import { Popover } from '@mui/material';
+import {Popover, PopoverProps, SxProps} from '@mui/material';
 import { alpha, styled } from '@mui/material/styles';
+import {ReactNode} from "react";
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +30,7 @@ MenuPopover.propTypes = {
   sx: PropTypes.object,
 };
 
-export default function MenuPopover({ children, sx, ...other }) {
+export default function MenuPopover({ children, sx, ...other }: PopoverProps ) {
   return (
     <Popover
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

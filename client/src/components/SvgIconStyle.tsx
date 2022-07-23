@@ -1,14 +1,10 @@
-import PropTypes from 'prop-types';
+
 import { Box } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-SvgIconStyle.propTypes = {
-  src: PropTypes.string.isRequired,
-  sx: PropTypes.object,
-};
 
-export default function SvgIconStyle({ src, sx }) {
+export default function SvgIconStyle({ src, sx, color }: { src: string; sx?: any, color?: any }) {
   return (
     <Box
       component="span"
@@ -19,6 +15,7 @@ export default function SvgIconStyle({ src, sx }) {
         bgcolor: 'currentColor',
         mask: `url(${src}) no-repeat center / contain`,
         WebkitMask: `url(${src}) no-repeat center / contain`,
+        color,
         ...sx,
       }}
     />
