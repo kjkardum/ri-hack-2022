@@ -15,7 +15,7 @@ jobs:
 - job: mainBackend
   displayName: 'Main Api'
   pool:
-    vmImage: 'windows-latest'
+    name: Default
 
   variables:
     solution: '**/*.sln'
