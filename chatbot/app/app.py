@@ -2,12 +2,15 @@ from flask import Flask, request, jsonify
 import openai
 import os
 from streql import equals
+from flask_cors import CORS, cross_origin
 
 # openai.organization = "Personal"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 context = """
 RiCycle je napredna aplikacija namjenjena odvozu otpada u Rijeci.
@@ -19,7 +22,8 @@ Ja sam robot namjenjen odgovaranju na upite korisnika pogonjen openAI gpt-3 tran
 question = "Kada će biti smeće pokupljeno kod mene?"
 
 
-@app.route("/chat", methods=["GET"])
+@app.route("/chat", methods=["POST"])
+@cross_origin()
 def chat():
 
     key = request.args.get("API_KEY")
@@ -29,7 +33,11 @@ def chat():
     if not key or not equals(key, os.environ["API_KEY"]):
         return jsonify([])
 
-    req = request.json
+    # print(request)
+
+    req = request.json["params"]
+
+    print(req)
 
     # start_sequence = "\nA:"
     # restart_sequence = "\n\nQ: "
