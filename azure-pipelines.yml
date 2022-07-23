@@ -1,0 +1,67 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+variables:
+  buildConfiguration: 'Release'
+  AppConfiguration.IsProduction: 'true'
+  ConnectionStrings.ApplicationConnection: $(prod_connection_string)
+
+jobs:
+- job: mainBackend
+  displayName: 'Main Api'
+  pool:
+    vmImage: 'windows-latest'
+
+  variables:
+    solution: '**/*.sln'
+    buildPlatform: 'Any CPU'
+    buildConfiguration: 'Release'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'User .NET 6 Core skd'
+    inputs: 
+     packageType: 'sdk'
+     version: '6.0.x'
+     includePreviewVersions: true
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+      feedsToUse: 'select'
+    displayName: 'Restore Nuget packages'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '--no-restore'
+    displayName: 'Build core projects'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/RiHackApi.WebApi.csproj'
+      arguments: '--configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)'
+      modifyOutputPath: true
+      workingDirectory: 'api'
+      zipAfterPublish: false
+    displayName: 'Publish API'
+  - task: FileTransform@1
+    displayName: 'File transform appsettings.json'
+    inputs:
+      folderPath: '$(Build.ArtifactStagingDirectory)/RiHackApi.WebApi/'
+      fileType: 'json'
+      targetFiles: 'appsettings.json'
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'Deploy webApp'
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
+      appType: 'webAppLinux'
+      WebAppName: 'ricycle'
+      packageForLinux: '$(Build.ArtifactStagingDirectory)/RiHackApi.WebApi/'
