@@ -69,7 +69,11 @@
     "simplebar-react": "^2.4.1",
     "typescript": "^4.7.4",
     "web-vitals": "^2.1.4",
-    "yup": "^0.32.11"
+    "yup": "^0.32.11",
+    "@xstate/react": "^1.5.1",
+    "mapbox-gl": "^2.9.2",
+    "react-map-gl": "^7.0.18",
+    "xstate": "^4.22.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",
@@ -85,7 +89,9 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "@types/mapbox-gl": "^2.3.0",
+    "@xstate/inspect": "^0.4.1"
   },
   "overrides": {
     "@svgr/webpack": "^6.2.1"
