@@ -20,9 +20,6 @@ import GarbageContainers from "./pages/GarbageContainers";
 export default function Router() {
   return useRoutes([
     {
-      path: '/',
-    },
-    {
       path: '/dashboard',
       element: <DashboardLayout />,
       children: [
@@ -38,8 +35,7 @@ export default function Router() {
       path: '/',
       element: <LogoOnlyLayout />,
       children: [
-        { path: '/', element: <Navigate to="/home" /> },
-        { path: '/home', element: <HomePage /> },
+        { path: '/', element: <HomePage /> },
         { path: 'login', element: <Login /> },
         { path: 'register', element: <Register /> },
         { path: '404', element: <NotFound /> },
