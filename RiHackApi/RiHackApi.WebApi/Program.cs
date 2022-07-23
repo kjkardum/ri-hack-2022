@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using RiHackApi.Business.Services;
 using RiHackApi.Common.Interfaces;
 using RiHackApi.Common.Settings;
 using RiHackApi.Identity.Extensions;
 using RiHackApi.Identity.Seed;
+using RiHackApi.Interfaces.Services;
 using RiHackApi.Persistence.Contexts;
 using RiHackApi.Persistence.Entities;
+using RiHackApi.Persistence.Repositories;
 using RiHackApi.Shared.Services;
 using RiHackApi.WebApi.Helpers;
 using RiHackApi.WebApi.Services;
@@ -54,7 +57,9 @@ builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
+builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(ApplicationRepository<>));
 
+builder.Services.AddScoped<IGarbageContainerService, GarbageContainerService>();
 
 var app = builder.Build();
 

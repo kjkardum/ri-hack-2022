@@ -88,7 +88,7 @@ public static class IdentityExtensions
         services.AddAuthorization(opt =>
         {
             opt.AddPolicy(Policies.RequireSuperAdmin, policy => policy.RequireRole(BaseRoles.SuperAdmin));
-            opt.AddPolicy(Policies.RequireAdmin, policy => policy.RequireRole(BaseRoles.Admin));
+            opt.AddPolicy(Policies.RequireAdmin, policy => policy.RequireRole(BaseRoles.Admin, BaseRoles.SuperAdmin));
         });
         services.AddScoped<IAccountService, AccountService>();
 

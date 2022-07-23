@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\RiHackApi.Common\RiHackApi.Common.csproj" />
+      <ProjectReference Include="..\RiHackApi.Domain\RiHackApi.Domain.csproj" />
     </ItemGroup>
 
 </Project>

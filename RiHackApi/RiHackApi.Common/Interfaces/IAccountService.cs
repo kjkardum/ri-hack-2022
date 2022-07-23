@@ -12,4 +12,7 @@ public interface IAccountService
     /*Task<Response<string>> ForgotPassword(ForgotPasswordRequest model, string origin);
     Task<Response<string>> ResetPassword(ResetPasswordRequest model);*/
     Task<bool> CheckEmailTaken(string email);
+    
+    Task SetAsAdmin(Guid userId);
+    Task RevokeAdmin(Guid userId);
 }

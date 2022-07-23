@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RiHackApi.Common.Entities;
 using RiHackApi.Common.Interfaces;
+using RiHackApi.Domain.Entities;
 using RiHackApi.Persistence.Entities;
 
 namespace RiHackApi.Persistence.Contexts;
@@ -10,6 +11,9 @@ namespace RiHackApi.Persistence.Contexts;
 public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     private readonly IAuthUserService _authUserService;
+    
+    public DbSet<GarbageContainer> GarbageContainers { get; set; }
+    public DbSet<ContainerLocation> ContainerLocations { get; set; }
 
     public ApplicationDbContext(DbContextOptions options, IAuthUserService authUserService) : base(options)
     {
