@@ -7,6 +7,7 @@ using RiHackApi.Identity.Extensions;
 using RiHackApi.Identity.Seed;
 using RiHackApi.Persistence.Contexts;
 using RiHackApi.Persistence.Entities;
+using RiHackApi.Persistence.Repositories;
 using RiHackApi.Shared.Services;
 using RiHackApi.WebApi.Helpers;
 using RiHackApi.WebApi.Services;
@@ -54,7 +55,7 @@ builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
-
+builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(ApplicationRepository<>));
 
 var app = builder.Build();
 
