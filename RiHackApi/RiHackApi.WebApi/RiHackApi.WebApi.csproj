@@ -23,8 +23,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\RiHackApi.Business\RiHackApi.Business.csproj" />
       <ProjectReference Include="..\RiHackApi.Common\RiHackApi.Common.csproj" />
       <ProjectReference Include="..\RiHackApi.Identity\RiHackApi.Identity.csproj" />
+      <ProjectReference Include="..\RiHackApi.Interfaces\RiHackApi.Interfaces.csproj" />
       <ProjectReference Include="..\RiHackApi.Shared\RiHackApi.Shared.csproj" />
     </ItemGroup>
 

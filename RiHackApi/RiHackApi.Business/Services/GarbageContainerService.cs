@@ -21,33 +21,84 @@ public class GarbageContainerService : IGarbageContainerService
         await _garbageContainerRepository.SaveAllChanges();
     }
 
-    public async Task<GarbageContainer> GetGarbageContainer(int id)
+    public async Task<GarbageContainer> GetGarbageContainer(Guid id)
     {
-        throw new NotImplementedException();
+        var container = await _garbageContainerRepository.FirstOrDefaultAsync(t => t.Id == id);
+        if (container == null)
+        {
+            throw new Exception("Container not found");
+        }
+        return container;
     }
 
     public async Task<PaginatedResponse<GarbageContainer>> GetGarbageContainers(int page, int pageSize)
     {
-        throw new NotImplementedException();
+        var query = _garbageContainerRepository
+            .AsQueryable()
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize);
+        return new PaginatedResponse<GarbageContainer>
+        {
+            Data = await _garbageContainerRepository.GetAllAsync(query),
+            Page = page,
+            PageSize = pageSize,
+            Count = await _garbageContainerRepository.CountAsync(_garbageContainerRepository.AsQueryable())
+        };
     }
 
-    public async Task<GarbageContainer> UpdateGarbageContainer(int id, GarbageContainer garbageContainer)
+    public async Task<ICollection<GarbageContainer>> GetAllGarbageContainers()
     {
-        throw new NotImplementedException();
+        return await _garbageContainerRepository.GetAllAsync();
     }
 
-    public async Task DeleteGarbageContainer(int id)
+    public async Task<GarbageContainer> UpdateGarbageContainer(Guid id, GarbageContainer garbageContainer)
     {
-        throw new NotImplementedException();
+        var existingContainer = await _garbageContainerRepository.FirstOrDefaultAsync(t => t.Id == id);
+        if (existingContainer == null)
+        {
+            throw new Exception("Container not found");
+        }
+        existingContainer.Label = garbageContainer.Label;
+        existingContainer.Latitude = garbageContainer.Latitude;
+        existingContainer.Longitude = garbageContainer.Longitude;
+        existingContainer.Active = garbageContainer.Active;
+        _garbageContainerRepository.Update(existingContainer);
+        await _garbageContainerRepository.SaveAllChanges();
+        return existingContainer;
     }
 
-    public async Task EnableGarbageContainer(int id)
+    public async Task DeleteGarbageContainer(Guid id)
     {
-        throw new NotImplementedException();
+        var existingContainer = await _garbageContainerRepository.FirstOrDefaultAsync(t => t.Id == id);
+        if (existingContainer == null)
+        {
+            throw new Exception("Container not found");
+        }
+        _garbageContainerRepository.Delete(existingContainer);
+        await _garbageContainerRepository.SaveAllChanges();
     }
 
-    public async Task DisableGarbageContainer(int id)
+    public async Task EnableGarbageContainer(Guid id)
     {
-        throw new NotImplementedException();
+        var existingContainer = await _garbageContainerRepository.FirstOrDefaultAsync(t => t.Id == id);
+        if (existingContainer == null)
+        {
+            throw new Exception("Container not found");
+        }
+        existingContainer.Active = true;
+        _garbageContainerRepository.Update(existingContainer);
+        await _garbageContainerRepository.SaveAllChanges();
+    }
+
+    public async Task DisableGarbageContainer(Guid id)
+    {
+        var existingContainer = await _garbageContainerRepository.FirstOrDefaultAsync(t => t.Id == id);
+        if (existingContainer == null)
+        {
+            throw new Exception("Container not found");
+        }
+        existingContainer.Active = false;
+        _garbageContainerRepository.Update(existingContainer);
+        await _garbageContainerRepository.SaveAllChanges();
     }
 }
