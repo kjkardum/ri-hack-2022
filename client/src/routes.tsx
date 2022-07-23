@@ -11,6 +11,8 @@ import Register from './pages/Register';
 import Products from './pages/Products';
 import DashboardApp from './pages/DashboardApp';
 import HomePage from "./pages/HomePage";
+import ContainerLocations from "./pages/ContainerLocations";
+import GarbageContainers from "./pages/GarbageContainers";
 
 
 // ----------------------------------------------------------------------
@@ -26,6 +28,8 @@ export default function Router() {
       children: [
         { path: 'app', element: <DashboardApp /> },
         { path: 'user', element: <User /> },
+        { path: 'container-locations', element: <ContainerLocations /> },
+        { path: 'garbage-containers', element: <GarbageContainers /> },
         { path: 'products', element: <Products /> },
         { path: 'blog', element: <Blog /> },
       ],

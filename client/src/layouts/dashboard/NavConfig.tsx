@@ -17,6 +17,16 @@ const navConfig = [
     icon: getIcon('eva:people-fill'),
   },
   {
+    title: 'Container Locations',
+    path: '/dashboard/container-locations',
+    icon: getIcon('eva:people-fill'),
+  },
+  {
+    title: 'Garbage Containers',
+    path: '/dashboard/garbage-containers',
+    icon: getIcon('eva:people-fill'),
+  },
+  {
     title: 'product',
     path: '/dashboard/products',
     icon: getIcon('eva:shopping-bag-fill'),
