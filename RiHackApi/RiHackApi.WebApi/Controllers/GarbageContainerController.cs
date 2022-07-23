@@ -40,8 +40,7 @@ public class GarbageContainerController : BaseApiController
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> Create(GarbageContainer garbageContainer)
     {
-        await _garbageContainerService.AddGarbageContainer(garbageContainer);
-        return Ok();
+        return Ok(await _garbageContainerService.AddGarbageContainer(garbageContainer));
     }
     
     [HttpPut("{id:guid}")]

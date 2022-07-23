@@ -1,5 +1,5 @@
 export interface IContainerLocation {
-    id: string;
+    id?: string;
     latitude: number;
     longitude: number;
 }

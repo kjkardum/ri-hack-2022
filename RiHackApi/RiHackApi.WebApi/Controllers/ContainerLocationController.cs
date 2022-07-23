@@ -40,16 +40,14 @@ public class ContainerLocationController : BaseApiController
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> Create(ContainerLocation containerLocation)
     {
-        await _garbageContainerService.AddContainerLocation(containerLocation);
-        return Ok();
+        return Ok(await _garbageContainerService.AddContainerLocation(containerLocation));
     }
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> Update(Guid id, ContainerLocation containerLocation)
     {
-        await _garbageContainerService.UpdateContainerLocation(id, containerLocation);
-        return Ok();
+        return Ok(await _garbageContainerService.UpdateContainerLocation(id, containerLocation));
     }
     
     [HttpDelete("{id:guid}")]
