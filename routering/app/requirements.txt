@@ -1,0 +1,5 @@
+Flask==2.1.2
+geopy==2.2.0
+PuLP==2.6.0
+gunicorn==20.1.0
+streql==3.0.2
