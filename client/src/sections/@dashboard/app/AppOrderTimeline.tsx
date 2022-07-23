@@ -13,7 +13,7 @@ AppOrderTimeline.propTypes = {
   list: PropTypes.array.isRequired,
 };
 
-export default function AppOrderTimeline({ title, subheader, list, ...other }) {
+export default function AppOrderTimeline({ title, subheader, list, ...other }: any) {
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />

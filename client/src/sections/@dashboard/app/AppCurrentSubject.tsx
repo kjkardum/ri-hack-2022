@@ -41,7 +41,7 @@ AppCurrentSubject.propTypes = {
   chartLabels: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default function AppCurrentSubject({ title, subheader, chartData, chartColors, chartLabels, ...other }) {
+export default function AppCurrentSubject({ title, subheader, chartData, chartColors, chartLabels, ...other }: any) {
   const chartOptions = merge(BaseOptionChart(), {
     stroke: { width: 2 },
     fill: { opacity: 0.48 },
@@ -61,6 +61,8 @@ export default function AppCurrentSubject({ title, subheader, chartData, chartCo
       <CardHeader title={title} subheader={subheader} />
 
       <ChartWrapperStyle dir="ltr">
+        {/*
+        // @ts-ignore */}
         <ReactApexChart type="radar" series={chartData} options={chartOptions} height={340} />
       </ChartWrapperStyle>
     </Card>

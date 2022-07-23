@@ -1,6 +1,8 @@
 // ----------------------------------------------------------------------
 
-function pxToRem(value) {
+import {TypographyOptions} from "@mui/material/styles/createTypography";
+
+function pxToRem(value: any) {
   return `${value / 16}rem`;
 }
 
@@ -20,7 +22,7 @@ function responsiveFontSizes({ sm, md, lg }) {
 
 const FONT_PRIMARY = 'Public Sans, sans-serif';
 
-const typography = {
+const typography: TypographyOptions = {
   fontFamily: FONT_PRIMARY,
   fontWeightRegular: 400,
   fontWeightMedium: 600,

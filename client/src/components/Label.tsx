@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-const RootStyle = styled('span')(({ theme, ownerState }) => {
+const RootStyle = styled('span')(({ theme, ownerState }: any) => {
   const isLight = theme.palette.mode === 'light';
   const { color, variant } = ownerState;
 
@@ -82,6 +82,7 @@ export default function Label({ children, color = 'default', variant = 'ghost', 
 
   return (
     <RootStyle
+        // @ts-ignore
       ownerState={{ color, variant }}
       sx={{
         ...(startIcon && { pl: 0.75 }),
