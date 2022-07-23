@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import json
 from streql import equals
 from optimizer import Optimizer
+from vrp import Vrp
 
 import os
 
@@ -34,6 +35,23 @@ def containters_candidates(max_number):
         return jsonify({})
 
     return jsonify(optimizer.optimize(candidates, int(max_number)))
+
+
+@app.route("/vrp/<int:num_drivers>/<int:capacity>", methods=["GET"])
+def vrp(num_drivers: int, capacity: int):
+
+    req = request.json
+
+    key = request.args.get("API_KEY")
+
+    if not key or not equals(key, os.environ["API_KEY"]):
+        return jsonify({})
+
+    vrp = Vrp(req["depot"], req["stops"], req["demands"])
+
+    res = vrp.solve(num_drivers, capacity)
+
+    return jsonify(res)
 
 
 if __name__ == "__main__":

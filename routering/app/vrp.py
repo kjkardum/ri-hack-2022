@@ -16,7 +16,7 @@ OSRM_URL = "http://127.0.0.1:5001"
 # vrp_fast = VehicleRoutingProblem(
 
 
-class VRP:
+class Vrp:
     def __init__(self, depot: tuple, stops: list, demands: list):
         self.depot = depot
         self.stops = [depot] + stops
@@ -25,7 +25,7 @@ class VRP:
 
         self.init_graph_dists()
 
-        for i, x in demands:
+        for i, x in enumerate(demands):
             self.graph.nodes[i]["demand"] = x
 
         # self.graph.nodes[1]["demand"] = 5
@@ -43,7 +43,7 @@ class VRP:
             self.graph, load_capacity=capacity, num_vehicles=num_vehicles)
 
         # prob.num_vehicles = 2
-        prob.solve(time_limit=2)
+        prob.solve(time_limit=1)
 
         # print(self.stops)
 
@@ -89,7 +89,10 @@ class VRP:
 
         assert sys.version_info >= (3, 7)
 
+        # print(reqs)
         res = asyncio.run(self.make_requests_dist(urls=reqs))
+
+        # pprint(res)
 
         for x in range(len(self.stops) - 1):
             self.graph.add_edge(
@@ -141,18 +144,18 @@ class VRP:
         return {x[1]: x[3]["coordinates"] for x in results}
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    stops = []
+#     stops = []
 
-    for x in range(10):
-        stops.append((14.4268 + random.random() / 1000,
-                     45.3358 + random.random() / 1000))
+#     for x in range(10):
+#         stops.append((14.4268 + random.random() / 1000,
+#                      45.3358 + random.random() / 1000))
 
-    v = VRP(depot=(14.4185, 45.3415),
-            stops=stops,
-            demands=[(x, random.randint(1, 10)) for x in range(len(stops))])
+#     v = Vrp(depot=(14.4185, 45.3415),
+#             stops=stops,
+#             demands=[(x, random.randint(1, 10)) for x in range(len(stops))])
 
-    res = v.solve(10, 50)
+#     res = v.solve(10, 50)
 
-    pprint(res)
+#     pprint(res)
