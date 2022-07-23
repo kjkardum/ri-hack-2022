@@ -13,6 +13,8 @@ public class GarbageContainer : AuditableBaseEntity
     public Guid ContainerLocationId { get; set; }
     
     public GarbageContainerType Type { get; set; }
+    
+    public double MaxWeight { get; set; }
 
     [JsonIgnore]
     public ContainerLocation? ContainerLocation { get; set; }

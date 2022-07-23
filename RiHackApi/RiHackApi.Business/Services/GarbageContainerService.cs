@@ -102,6 +102,7 @@ public class GarbageContainerService : IGarbageContainerService
         }
         existingContainer.Label = garbageContainer.Label;
         existingContainer.Type = garbageContainer.Type;
+        existingContainer.MaxWeight = garbageContainer.MaxWeight;
         
         _garbageContainerRepository.Update(existingContainer);
         await _garbageContainerRepository.SaveAllChanges();
