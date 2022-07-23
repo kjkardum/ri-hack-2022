@@ -45,6 +45,7 @@
     "@iconify/react": "^3.2.2",
     "@mui/lab": "^5.0.0-alpha.88",
     "@mui/material": "^5.8.6",
+    "@mui/x-data-grid": "^5.14.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.0.6",
