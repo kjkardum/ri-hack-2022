@@ -5,12 +5,12 @@ import {Feature, FeatureCollection, GeoJsonProperties, Geometry} from "geojson";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYWN2aWphbm92aWMiLCJhIjoiY2w1eHR5d2R2MHgxdTNqbnFraDF3ZnhwbyJ9.jjyFYZ7yzw0YOfll-vkewQ"
 
-const NativeMap = ({
-                       width,
-                       height, lines, points, onClickFunc
-                   }: {
-    lines: [number, number][], points: [number, number][], onClickFunc: (event: MapLayerMouseEvent) => void, width: number,
-    height: number
+const NativeMap = ({width, height, lines, points, onClickFunc}: {
+    lines: [number, number][],
+    points: [number, number][],
+    onClickFunc: (event: MapLayerMouseEvent) => void,
+    width: number | string,
+    height: number | string
 }) => {
     const [data, setData] = useState<Feature<Geometry, GeoJsonProperties> | FeatureCollection<Geometry, GeoJsonProperties> | undefined>({
         type: "Feature",

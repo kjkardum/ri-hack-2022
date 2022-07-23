@@ -1,7 +1,7 @@
 import { Link as RouterLink } from 'react-router-dom';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Card, Link, Container, Typography } from '@mui/material';
+import {Card, Link, Container, Typography, CardContent, CardActions, Button, CardHeader} from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
 // components
@@ -11,6 +11,8 @@ import Logo from '../components/Logo';
 import { LoginForm } from '../sections/auth/login';
 import AuthSocial from '../sections/auth/AuthSocial';
 import NativeMap from "../components/NativeMap";
+import useAuth from "../hooks/useAuth";
+import {loginCheckBackend} from "../endpoints/StatusEndpoints";
 
 // ----------------------------------------------------------------------
 
@@ -58,6 +60,7 @@ const ContentStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function HomePage() {
+    const {user, login, logout} = useAuth();
     const smUp = useResponsive('up', 'sm');
 
     const mdUp = useResponsive('up', 'md');
@@ -81,8 +84,23 @@ export default function HomePage() {
                 <Container>
                     <ContentStyle>
 
-                        <NativeMap lines={[]} points={[]} onClickFunc={() => null} width={100} height={100}></NativeMap>
-
+                        <NativeMap lines={[]} points={[]} onClickFunc={() => null} width={300} height={300}></NativeMap>
+                        <Card>
+                            <CardHeader title='Demo user checker'/>
+                            <CardContent>
+                                <pre>
+                                    {JSON.stringify(user, null, 2)}
+                                </pre>
+                            </CardContent>
+                            <CardActions>
+                                <Button variant='contained' onClick={() => login('superadmin@hahafer.com', 'Pa$$w0rd')}>Login</Button>
+                                <Button variant='contained' onClick={() => logout()}>Logout</Button>
+                                <Button variant='contained' onClick={async () => {
+                                    const result = await loginCheckBackend();
+                                    alert(result);
+                                }}>Check auth</Button>
+                            </CardActions>
+                        </Card>
                     </ContentStyle>
                 </Container>
             </RootStyle>
