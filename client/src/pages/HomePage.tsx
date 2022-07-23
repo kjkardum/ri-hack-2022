@@ -69,12 +69,11 @@ export default function HomePage() {
         <Page title="Home">
             <RootStyle>
                 <HeaderStyle>
-                    <Logo />
-
+                    <Logo sx={{opacity: 0}}/>
                     {smUp && (
                         <Typography variant="body2" sx={{ mt: { md: -2 } }}>
                             Work for Čistoća? {''}
-                            <Link variant="subtitle2" component={RouterLink} to="/register">
+                            <Link variant="subtitle2" component={RouterLink} to="/login">
                                 Login
                             </Link>
                         </Typography>
