@@ -22,7 +22,6 @@ public static class DefaultSuperAdmin
         };
         await roleManager.CreateAsync(new IdentityRole<Guid>(BaseRoles.SuperAdmin));
         await roleManager.CreateAsync(new IdentityRole<Guid>(BaseRoles.Admin));
-        await userManager.AddPasswordAsync(user, "Pa$$w0rd");
         await userManager.CreateAsync(user, "Pa$$w0rd");
         await userManager.AddToRoleAsync(user, BaseRoles.SuperAdmin);
     }
