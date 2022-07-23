@@ -9,7 +9,7 @@ import { Box } from '@mui/material';
 const Page = forwardRef(({ children, title = '', meta, ...other }: { children?: ReactNode, title?: string, meta?: any} & any, ref: any) => (
   <>
     <Helmet>
-      <title>{`${title} | Minimal-UI`}</title>
+      <title>{`${title} | RiCycle`}</title>
       {meta}
     </Helmet>
 
