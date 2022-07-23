@@ -10,6 +10,7 @@ variables:
   buildConfiguration: 'Release'
   AppConfiguration.IsProduction: 'true'
   ConnectionStrings.ApplicationConnection: $(prod_connection_string)
+  ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
 
 jobs:
 - job: mainBackend
@@ -65,3 +66,27 @@ jobs:
       appType: 'webAppLinux'
       WebAppName: 'ricycle'
       packageForLinux: '$(Build.ArtifactStagingDirectory)/RiHackApi.WebApi/'
+
+- job: frontend
+  displayName: 'React Client'
+  pool:
+    name: Default
+    demands: npm
+  steps:
+  - script: npm install -g yarn
+    displayName: 'Install yarn'
+    workingDirectory: client
+  - script: npm install
+    displayName: 'Install dependencies'
+    workingDirectory: client
+  - script: npm run build
+    displayName: 'Build'
+    workingDirectory: client
+  - task: AzureFileCopy@4
+    inputs:
+      SourcePath: 'client/build/*'
+      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
+      Destination: 'AzureBlob'
+      storage: 'rihack'
+      ContainerName: '$web'
+      AdditionalArgumentsForBlobCopy: '--overwrite=true --recursive'
