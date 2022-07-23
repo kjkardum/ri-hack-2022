@@ -81,11 +81,20 @@ jobs:
   - script: npm run build
     displayName: 'Build'
     workingDirectory: client
-  - task: AzureFileCopy@4
+#  - task: AzureFileCopy@4
+#    inputs:
+#      SourcePath: 'client/build/*'
+#      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
+#      Destination: 'AzureBlob'
+#      storage: 'rihack'
+#      ContainerName: '$web'
+#      AdditionalArgumentsForBlobCopy: '--overwrite=true --recursive'
+
+  - task: AzureCLI@2
+    displayName: PublishToBlob
     inputs:
-      SourcePath: 'client/build/*'
-      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
-      Destination: 'AzureBlob'
-      storage: 'rihack'
-      ContainerName: '$web'
-      AdditionalArgumentsForBlobCopy: '--overwrite=true --recursive'
+      azureSubscription: 'Azure CICD'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: az storage blob upload-batch -d "$web" --account-name "rihack" -s "client/build/*"
+      
