@@ -7,11 +7,11 @@ using RiHackApi.WebApi.Controllers.Base;
 
 namespace RiHackApi.WebApi.Controllers;
 
-public class GarbageContainerController : BaseApiController
+public class ContainerLocationController : BaseApiController
 {
     private readonly IGarbageContainerService _garbageContainerService;
 
-    public GarbageContainerController(IGarbageContainerService garbageContainerService)
+    public ContainerLocationController(IGarbageContainerService garbageContainerService)
     {
         _garbageContainerService = garbageContainerService;
     }
@@ -19,36 +19,36 @@ public class GarbageContainerController : BaseApiController
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await _garbageContainerService.GetAllGarbageContainers());
+        return Ok(await _garbageContainerService.GetAllContainerLocations());
     }
     
     [HttpGet("{id:guid}")]
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        return Ok(await _garbageContainerService.GetGarbageContainer(id));
+        return Ok(await _garbageContainerService.GetContainerLocation(id));
     }
     
     [HttpGet("paginated")]
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> GetPaginated([FromQuery] int page, [FromQuery] int pageSize)
     {
-        return Ok(await _garbageContainerService.GetGarbageContainers(page, pageSize));
+        return Ok(await _garbageContainerService.GetContainerLocations(page, pageSize));
     }
     
     [HttpPost]
     [Authorize(Policy = Policies.RequireAdmin)]
-    public async Task<IActionResult> Create(GarbageContainer garbageContainer)
+    public async Task<IActionResult> Create(ContainerLocation containerLocation)
     {
-        await _garbageContainerService.AddGarbageContainer(garbageContainer);
+        await _garbageContainerService.AddContainerLocation(containerLocation);
         return Ok();
     }
-    
+
     [HttpPut("{id:guid}")]
     [Authorize(Policy = Policies.RequireAdmin)]
-    public async Task<IActionResult> Update(Guid id, GarbageContainer garbageContainer)
+    public async Task<IActionResult> Update(Guid id, ContainerLocation containerLocation)
     {
-        await _garbageContainerService.UpdateGarbageContainer(id, garbageContainer);
+        await _garbageContainerService.UpdateContainerLocation(id, containerLocation);
         return Ok();
     }
     
@@ -56,7 +56,7 @@ public class GarbageContainerController : BaseApiController
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _garbageContainerService.DeleteGarbageContainer(id);
+        await _garbageContainerService.DeleteContainerLocation(id);
         return Ok();
     }
 }

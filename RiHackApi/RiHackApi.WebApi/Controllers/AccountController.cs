@@ -40,4 +40,21 @@ public class AccountController : BaseApiController
     {
         return Ok(await _accountService.CheckEmailTaken(request.Email));
     }
+    
+    [HttpPost("SetAsAdmin/{userId:guid}")]
+    [Authorize(Policy = Policies.RequireSuperAdmin)]
+    public async Task<IActionResult> SetAsAdmin(Guid userId)
+    {
+        await _accountService.SetAsAdmin(userId);
+        return Ok();
+    }
+    
+    [HttpPost("RevokeAdmin/{userId:guid}")]
+    [Authorize(Policy = Policies.RequireSuperAdmin)]
+    public async Task<IActionResult> RevokeAdmin(Guid userId)
+    { 
+        await _accountService.RevokeAdmin(userId);
+        return Ok();
+    }
+    
 }
