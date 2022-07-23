@@ -48,7 +48,7 @@ jobs:
       projects: '**/RiHackApi.WebApi.csproj'
       arguments: '--configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)'
       modifyOutputPath: true
-      workingDirectory: 'api'
+      workingDirectory: ''
       zipAfterPublish: false
     displayName: 'Publish API'
   - task: FileTransform@1
