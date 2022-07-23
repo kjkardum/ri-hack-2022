@@ -71,7 +71,6 @@ jobs:
   displayName: 'React Client'
   pool:
     name: Default
-    demands: npm
   steps:
   - script: npm install -g yarn
     displayName: 'Install yarn'
