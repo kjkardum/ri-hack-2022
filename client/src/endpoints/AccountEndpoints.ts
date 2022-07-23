@@ -7,11 +7,11 @@ export const loginAccount = async (email: string, password: string) => {
     })).data;
 }
 
-export const registerAccount = async (email: string, password: string, repeatPassword: string) => {
+export const registerAccount = async (email: string, password: string, confirmPassword: string) => {
     return (await axios.post('/Account/Register', {
         email,
         password,
-        repeatPassword,
+        confirmPassword,
     })).data;
 }
 

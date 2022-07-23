@@ -130,10 +130,10 @@ function AuthProvider({children}: AuthProviderProps) {
     }, []);
 
     const login = async (email: string, password: string) => {
-        const {succeeded, data} = await loginAccount(email, password);
+        const {succeeded, data, message} = await loginAccount(email, password);
 
         if (!succeeded) {
-            throw new Error('Login failed. Check your username and password');
+            return {success: false, message: message};
         }
         const {jwToken} = data;
 
@@ -144,6 +144,7 @@ function AuthProvider({children}: AuthProviderProps) {
                 user: createUserFromToken(jwToken)
             },
         });
+        return {success: true};
     };
 
     const createUserFromToken = (jwToken: string) => {
@@ -154,7 +155,12 @@ function AuthProvider({children}: AuthProviderProps) {
     }
 
     const register = async (email: string, password: string, repeatPassword: string) => {
-        const response = await registerAccount(email, password, repeatPassword);
+        let response: any;
+        try {
+        response = await registerAccount(email, password, repeatPassword);
+        } catch (err) {
+            response = {succeeded: false, message: 'Your password must be at least 8 digits long'};
+        }
         /*
         const {accessToken, user} = response.data;
 
@@ -166,6 +172,10 @@ function AuthProvider({children}: AuthProviderProps) {
             },
         });
          */
+        if (response.succeeded) {
+            return {success: true};
+        }
+        return {success: false, message: response.message};
     };
 
     const logout = async () => {

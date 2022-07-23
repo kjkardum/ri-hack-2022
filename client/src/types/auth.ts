@@ -23,7 +23,7 @@ export type JWTContextType = {
     isInitialized: boolean;
     user: AuthUser;
     method: 'jwt';
-    login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, repeatPassword: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<{ success: boolean, message?: string }>;
+    register: (email: string, password: string, repeatPassword: string) => Promise<{ success: boolean, message?: string }>;
     logout: () => Promise<void>;
 };
