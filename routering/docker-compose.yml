@@ -5,13 +5,13 @@ networks:
     driver: bridge
 
 services:
-  routing-app:
-    build: ./app
-    container_name: routing-app
-    ports:
-      - "5000:5000"
-    networks:
-      - local
+  # routing-app:
+  #   build: ./app
+  #   container_name: routing-app
+  #   ports:
+  #     - "5000:5000"
+  #   networks:
+  #     - local
   osrm:
     #image: osrm/osrm-backend
     build: ./osrm

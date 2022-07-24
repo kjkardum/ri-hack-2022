@@ -1,3 +1,4 @@
+from flask import jsonify
 from networkx import DiGraph
 from vrpy import VehicleRoutingProblem
 import asyncio
@@ -45,9 +46,11 @@ class Vrp(Async_Fetcher):
         try:
             prob.solve(time_limit=1)
         except:
-            return {"error": "cant solve"}
+            return jsonify({"error": "cant solve"})  # print(self.stops)
 
-        # print(self.stops)
+        # return jsonify(prob.best_routes)
+
+        # print(prob.best_routes)
 
         r = {}
         for k, v in prob.best_routes.items():
@@ -85,8 +88,7 @@ class Vrp(Async_Fetcher):
 
         for y in range(len(self.stops)):
             for x in range(len(self.stops)):
-                reqs[(x, y)] =\
-                    OSRM_URL + \
+                reqs[(x, y)] = OSRM_URL + \
                     f"/route/v1/car/{self.stops[x][0]},{self.stops[x][1]};{self.stops[y][0]},{self.stops[y][1]}"
 
         assert sys.version_info >= (3, 7)
@@ -109,7 +111,8 @@ class Vrp(Async_Fetcher):
                     x, y, cost=res[(1+x, 1+y)])
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    app.run()
 
 #     stops = []
 
