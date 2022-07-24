@@ -5,21 +5,15 @@ import {Feature, FeatureCollection, GeoJsonProperties, Geometry} from "geojson";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYWN2aWphbm92aWMiLCJhIjoiY2w1eHR5d2R2MHgxdTNqbnFraDF3ZnhwbyJ9.jjyFYZ7yzw0YOfll-vkewQ"
 
-const NativeMap = ({width, height, lines, points, onClickFunc}: {
-    lines: [number, number][],
+const RouteMap = ({width, height, lines, points, onClickFunc}: {
+    lines: [
+        number, number,
+    ][][],
     points: [number, number][],
     onClickFunc: (event: MapLayerMouseEvent) => void,
     width: number | string,
     height: number | string
 }) => {
-    const [data, setData] = useState<Feature<Geometry, GeoJsonProperties> | FeatureCollection<Geometry, GeoJsonProperties> | undefined>({
-        type: "Feature",
-        properties: {},
-        geometry: {
-            type: "LineString",
-            coordinates: lines
-        }
-    })
 
     return (
         <Map
@@ -37,7 +31,17 @@ const NativeMap = ({width, height, lines, points, onClickFunc}: {
             onClick={(event: MapLayerMouseEvent) => onClickFunc(event)}
         >
             <NavigationControl position="bottom-right"/>
-            <Source id="polylineLayer" type="geojson" data={data}>
+
+            <Source id="polylineLayer" type="geojson" data={
+                {
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                        type: "LineString",
+                        coordinates: lines[0]?.map(value => [value[1], value[0]])
+                    }
+                }
+            }>
                 <Layer
                     id="lineLayer"
                     type="line"
@@ -52,6 +56,7 @@ const NativeMap = ({width, height, lines, points, onClickFunc}: {
                     }}
                 />
             </Source>
+
             {points.map((value, index, array) => (
                 <Marker
                     key={index}
@@ -64,4 +69,4 @@ const NativeMap = ({width, height, lines, points, onClickFunc}: {
     )
 }
 
-export default NativeMap
+export default RouteMap;

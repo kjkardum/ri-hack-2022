@@ -43,7 +43,7 @@ class Vrp(Async_Fetcher):
 
         # prob.num_vehicles = 2
         try:
-            prob.solve(time_limit=1)
+            prob.solve(time_limit=5)
         except:
             return {"error": "cant solve"}
 
