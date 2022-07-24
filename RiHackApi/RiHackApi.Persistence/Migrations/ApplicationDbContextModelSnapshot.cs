@@ -171,11 +171,11 @@ namespace RiHackApi.Persistence.Migrations
                     b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
 
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 

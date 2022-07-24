@@ -11,6 +11,7 @@ using RiHackApi.Common.Requests;
 using RiHackApi.Common.Responses;
 using RiHackApi.Common.Settings;
 using RiHackApi.Common.Wrappers;
+using RiHackApi.Domain.Dtos;
 using RiHackApi.Persistence.Contexts;
 using RiHackApi.Persistence.Entities;
 
@@ -45,7 +46,7 @@ public class AccountService : IAccountService
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null) return new Response<LoginResponse>("User not found");
-        
+
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
         if (!result.Succeeded) return new Response<LoginResponse>("Invalid password");
 
@@ -99,9 +100,9 @@ public class AccountService : IAccountService
             Email = request.Email,
         };
         var result = await _userManager.CreateAsync(user, request.Password);
-        return result.Succeeded ? 
-            new Response<Guid>(user.Id, null) : 
-            new Response<Guid>($"Failed to register user, errors: {result.Errors}");
+        return result.Succeeded
+            ? new Response<Guid>(user.Id, null)
+            : new Response<Guid>($"Failed to register user, errors: {result.Errors}");
     }
 
     public async Task<Response<string>> ChangePassword(ChangePasswordRequest request)
@@ -110,9 +111,9 @@ public class AccountService : IAccountService
         if (account == null)
             return new Response<string>("User not found");
         var result = await _userManager.ChangePasswordAsync(account, request.CurrentPassword, request.Password);
-        return !result.Succeeded ?
-            new Response<string>(string.Join('\n', result.Errors.Select(e => e.Description).ToList())) :
-            new Response<string>("Success", null);
+        return !result.Succeeded
+            ? new Response<string>(string.Join('\n', result.Errors.Select(e => e.Description).ToList()))
+            : new Response<string>("Success", null);
     }
 
     public async Task<Response<string>> ForgotPassword(ForgotPasswordRequest model)
@@ -134,13 +135,14 @@ public class AccountService : IAccountService
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null) return new Response<string>("User not found");
         var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
-        
+
         if (!result.Succeeded) return new Response<string>(string.Join(", ", result.Errors.Select(e => e.Description)));
-        
+
         _dbContext.Users.Update(user);
         await _dbContext.SaveChangesAsync();
         return new Response<string>("Successfully changed password", null);
     }
+
     public async Task<bool> CheckEmailTaken(string email)
     {
         var user = await _userManager.FindByEmailAsync(email);
@@ -157,5 +159,28 @@ public class AccountService : IAccountService
     {
         var account = await _dbContext.Users.FirstAsync(u => u.Id == userId);
         await _userManager.RemoveFromRoleAsync(account, BaseRoles.Admin);
+    }
+
+    public async Task<ICollection<UserDto>> GetAllUsers()
+    {
+        var users = await _dbContext.Users
+            .AsQueryable()
+            .ToListAsync();
+        
+        var userDtos = new List<UserDto>();
+        
+        foreach (var user in users)
+        {
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Roles = (List<string>)await _userManager.GetRolesAsync(user)
+            };
+            
+            userDtos.Add(userDto);
+        }
+        
+        return userDtos;
     }
 }

@@ -1,0 +1,131 @@
+trigger:
+- master
+
+variables:
+  buildConfiguration: 'Release'
+  AppConfiguration.IsProduction: 'true'
+  ConnectionStrings.ApplicationConnection: $(prod_connection_string)
+  ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
+  ApplicationSettings.ChatbotUrl: 'https://ricyclechat.azurewebsites.net/'
+  ApplicationSettings.OptimizerUrl: 'https://ricycleoptimizator.azurewebsites.net/'
+  dockerRegistryServiceConnection: '52e45700-e5c2-4088-8055-49664180a631'
+  containerRegistry: 'rihackregistry.azurecr.io'
+  tag: '$(Build.BuildId)'
+
+jobs:
+- job: mainBackend
+  displayName: 'Main Api'
+  pool:
+    name: Default
+
+  variables:
+    solution: '**/*.sln'
+    buildPlatform: 'Any CPU'
+    buildConfiguration: 'Release'
+  steps:
+  - task: UseDotNet@2
+    displayName: 'User .NET 6 Core skd'
+    inputs: 
+     packageType: 'sdk'
+     version: '6.0.x'
+     includePreviewVersions: true
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+      feedsToUse: 'select'
+    displayName: 'Restore Nuget packages'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '--no-restore'
+    displayName: 'Build core projects'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/RiHackApi.WebApi.csproj'
+      arguments: '--configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)'
+      modifyOutputPath: true
+      workingDirectory: ''
+      zipAfterPublish: false
+    displayName: 'Publish API'
+  - task: FileTransform@1
+    displayName: 'File transform appsettings.json'
+    inputs:
+      folderPath: '$(Build.ArtifactStagingDirectory)/RiHackApi.WebApi/'
+      fileType: 'json'
+      targetFiles: 'appsettings.json'
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'Deploy webApp'
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
+      appType: 'webAppLinux'
+      WebAppName: 'ricycle'
+      packageForLinux: '$(Build.ArtifactStagingDirectory)/RiHackApi.WebApi/'
+
+- job: frontend
+  displayName: 'React Client'
+  pool:
+    name: Default
+  steps:
+  - script: npm install -g yarn
+    displayName: 'Install yarn'
+    workingDirectory: client
+  - script: yarn
+    displayName: 'Install dependencies'
+    workingDirectory: client
+  - script: yarn build
+    displayName: 'Build'
+    workingDirectory: client
+#  - task: AzureFileCopy@4
+#    inputs:
+#      SourcePath: 'client/build/*'
+#      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
+#      Destination: 'AzureBlob'
+#      storage: 'rihack'
+#      ContainerName: '$web'
+#      AdditionalArgumentsForBlobCopy: '--overwrite=true --recursive'
+  - task: AzureCLI@2
+    displayName: PublishToBlob
+    inputs:
+      azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: az storage blob upload-batch --connection-string "$(blob_connection_string)" -d '$web' --account-name "rihack" -s client/build/ --overwrite=true
+- job: chatbot
+  displayName: 'GPT3 Chatbot'
+  pool:
+    name: Default
+  steps:
+  - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/chatbot/app/Dockerfile --build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)" -t $(containerRegistry)/chatbot:$(tag) -t $(containerRegistry)/chatbot:latest --platform linux/amd64 $(Build.SourcesDirectory)/chatbot/app
+    displayName: Build application
+  - task: Docker@2
+    displayName: Push an image to container registry
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: 'chatbot'
+      command: 'push'
+      tags: |
+        $(tag)
+        latest
+  
+- job: optimizer
+  displayName: 'OSRM Routering optimizer'
+  pool:
+    name: Default
+  steps:
+  - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/routering/app/Dockerfile --build-arg API_KEY="$(optimizer_key)" -t $(containerRegistry)/routering:$(tag) -t $(containerRegistry)/routering:latest --platform linux/amd64 $(Build.SourcesDirectory)/routering/app
+    displayName: Build application
+  - task: Docker@2
+    displayName: Push an image to container registry
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: 'routering'
+      command: 'push'
+      tags: |
+        $(tag)
+        latest
+  

@@ -57,4 +57,11 @@ public class AccountController : BaseApiController
         return Ok();
     }
     
+    [HttpGet("GetAllUsers")]
+    [Authorize(Policy = Policies.RequireSuperAdmin)]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        return Ok(await _accountService.GetAllUsers());
+    }
+    
 }

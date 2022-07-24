@@ -2,8 +2,8 @@
 
 public enum GarbageContainerType
 {
-    Plastic = 0,
-    Paper = 1,
-    Metal = 2,
-    Other = 3,
+    Plastic = 1,
+    Paper = 2,
+    Metal = 3,
+    Other = 4,
 }

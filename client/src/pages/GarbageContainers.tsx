@@ -2,9 +2,10 @@ import {useEffect, useState} from 'react';
 import {Link as RouterLink} from 'react-router-dom';
 // material
 import {
+    Autocomplete,
     Button,
     Card,
-    Container,
+    Container, Dialog,
     FormControl,
     InputLabel,
     MenuItem,
@@ -31,7 +32,24 @@ import {IContainerLocation} from "../types/IContainerLocation";
 import {useSnackbar} from 'notistack';
 import {GarbageContainerType, GarbageContainerTypeString, IGarbageContainer} from "../types/IGarbageContainer";
 
+import * as yup from 'yup';
+import {useFormik} from 'formik';
+import {createContainerLocation, getAllContainerLocations, getContainerLocaions} from "../endpoints/ContainerLocations";
+import {
+    createGarbageContainer,
+    getGarbageContainer,
+    getGarbageContainers,
+    updateGarbageContainer
+} from "../endpoints/GarbageContainer";
+
 // ----------------------------------------------------------------------
+
+const newGarbageContainerValidationSchema = yup.object({
+    label: yup.string().required(),
+    type: yup.number().required().min(0),
+    maxWeight: yup.number().required().min(0),
+    containerLocationId: yup.string().required(),
+});
 
 export default function GarbageContainers() {
     const [loading, setLoading] = useState(false);
@@ -48,47 +66,69 @@ export default function GarbageContainers() {
     const [sortOrder, setSortOrder] = useState<string | null | undefined>(undefined);
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
-    const [filterBy, setFilterBy] = useState<GarbageContainerType | null>(null);
+    const [filterBy, setFilterBy] = useState<GarbageContainerType[] | null>(null);
     const [rowCount, setRowCount] = useState(0);
     const [rows, setRows] = useState<Array<IGarbageContainer>>([]);
+
+    const [editDialogGarbageContainer, setEditDialogGarbageContainer] = useState<IGarbageContainer | null>(null);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [containerLocaitons, setContainerLocaitons] = useState<IContainerLocation[]>([]);
+
+    const formik = useFormik({
+        initialValues: {
+            label: "",
+            type: -1,
+            maxWeight: 0,
+            containerLocationId: "",
+        },
+        validationSchema: newGarbageContainerValidationSchema,
+        onSubmit: async (values) => {
+            if (editDialogGarbageContainer) {
+                let res = await updateGarbageContainer(editDialogGarbageContainer.id, values);
+
+                if (res.status !== 200)
+                    return enqueueSnackbar("Error updating container", {variant: 'error'});
+
+                let index = rows.findIndex(row => row.id === editDialogGarbageContainer.id);
+                if (index !== -1) {
+                    let newRow = {...rows[index], ...res.data};
+                    setRows([newRow, ...rows.filter(row => row.id !== editDialogGarbageContainer.id)]);
+                }
+
+                setEditDialogGarbageContainer(null);
+                setAddDialogOpen(false);
+                return enqueueSnackbar("Garbage container updated", {variant: 'success'});
+            }
+
+            let res = await createGarbageContainer(values);
+
+            if (res.status !== 200)
+                return enqueueSnackbar("Error creating container location", {variant: 'error'});
+
+            enqueueSnackbar("Garbage container created", {variant: 'success'});
+            setRows([...rows, res.data]);
+            setAddDialogOpen(false);
+        },
+    });
 
     const loadData = async () => {
         try {
             setLoading(true);
-            /*
-            const {data} = await getAssets({
+
+            const {data} = await getGarbageContainers({
                 page,
                 pageSize,
                 sortBy: sortBy ?? '',
                 sortOrder: sortOrder ?? '',
                 term: delayedSearch,
-                assetType: filterBy ?? undefined
-            });*/
-            const data: IGarbageContainer[] = [
-                {
-                    id: "string",
-                    label: "string",
-                    type: GarbageContainerType.Metal,
-                    maxWeight: 123,
-                    ContainerLocationId: "string",
-                },
-                {
-                    id: "string",
-                    label: "string",
-                    type: GarbageContainerType.Metal,
-                    maxWeight: 5345123,
-                    ContainerLocationId: "string",
-                },
-                {
-                    id: "str123ing",
-                    label: "strin312g",
-                    type: GarbageContainerType.Metal,
-                    maxWeight: 123423,
-                }
-            ]
+                type: filterBy,
+            });
 
-            setRows(data);
-            setRowCount(data.length);
+            if (data == null || data.data == null)
+                return;
+
+            setRows(data.data);
+            setRowCount(data.count);
         } catch (e) {
             enqueueSnackbar("Error fetching data", {variant: 'error'});
         } finally {
@@ -102,9 +142,34 @@ export default function GarbageContainers() {
         setPage(0);
     }, [sortBy, sortOrder, delayedSearch, filterBy])
 
-    const handleEdit = (id: number) => {
-//         navigate(`/dashboard/assets/${id}`);
+    useEffect(() => {
+        (async () => {
+            let res = await getAllContainerLocations();
+
+            if (res === null)
+                return enqueueSnackbar("Error fetching container locations", {variant: 'error'});
+
+            setContainerLocaitons(res);
+        })()
+    }, []);
+
+
+    const handleEdit = async (id: string) => {
+        let res = await getGarbageContainer(id);
+
+        if (res.status !== 200)
+            return enqueueSnackbar("Error fetching container data", {variant: 'error'});
+
+        setEditDialogGarbageContainer(res.data);
+
+        formik.setFieldValue('label', res.data.label);
+        formik.setFieldValue('type', res.data.type);
+        formik.setFieldValue('maxWeight', res.data.maxWeight);
+        formik.setFieldValue('containerLocationId', res.data.containerLocationId);
+
+        setAddDialogOpen(true);
     }
+
 
 
     const columns: GridColumns<IGarbageContainer> = [
@@ -125,13 +190,92 @@ export default function GarbageContainers() {
 
     return (
         <Page title="User">
+            <Dialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+            >
+                <form onSubmit={formik.handleSubmit}>
+                    <Stack
+                        spacing={3}
+                        direction="column"
+                        justifyContent={"space-between"}
+                        sx={{
+                            minWidth: '520px',
+                            minHeight: '220px',
+                            padding: '24px',
+                        }}
+                    >
+                        <Typography variant="h6">Add garbage container</Typography>
+                        <TextField
+                            fullWidth
+                            id="label"
+                            name="label"
+                            label="Label"
+                            value={formik.values.label}
+                            onChange={formik.handleChange}
+                            error={formik.errors.label != null}
+                            helperText={formik.errors.label}
+                        />
+                        <Autocomplete
+                            id="containerLocationId"
+                            options={containerLocaitons.map(x => x.id)}
+                            sx={{width: "100%"}}
+                            onChange={(event, value) => {
+                                formik.setFieldValue('containerLocationId', value);
+                            }}
+                            value={formik.values.containerLocationId}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params} label="Container location" variant="outlined"
+                                    error={formik.errors.containerLocationId != null}
+                                    helperText={formik.errors.containerLocationId}
+                                />
+                            )}
+                        />
+                        <TextField
+                            fullWidth
+                            id="maxWeight"
+                            name="maxWeight"
+                            label="Max weight"
+                            value={formik.values.maxWeight}
+                            onChange={formik.handleChange}
+                            error={formik.errors.maxWeight != null}
+                            helperText={formik.errors.maxWeight}
+                        />
+                        <FormControl>
+                            <InputLabel>Type</InputLabel>
+                            <Select
+                                fullWidth
+                                id="type"
+                                name="type"
+                                label="Type"
+                                value={formik.values.type}
+                                onChange={formik.handleChange}
+                                error={formik.errors.type != null}
+                            >
+                                <MenuItem value={GarbageContainerType.Plastic}>Plastic</MenuItem>
+                                <MenuItem value={GarbageContainerType.Paper}>Paper</MenuItem>
+                                <MenuItem value={GarbageContainerType.Metal}>Metal</MenuItem>
+                                <MenuItem value={GarbageContainerType.Other}>Garbage</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <Button color="primary" variant="contained" fullWidth type="submit">
+                            Submit
+                        </Button>
+                    </Stack>
+                </form>
+            </Dialog>
+
             <Container>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
                         Garbage Containers
                     </Typography>
                     <Button variant="contained" component={RouterLink} to="#"
-                            startIcon={<Iconify icon="eva:plus-fill"/>}>
+                            startIcon={<Iconify icon="eva:plus-fill"/>}
+                            onClick={() => setAddDialogOpen(true)}
+                    >
                         Add Garbage Container
                     </Button>
                 </Stack>
@@ -168,13 +312,12 @@ export default function GarbageContainers() {
                                     toolbar: {
                                         value: search,
                                         onChange: (event: React.ChangeEvent<HTMLInputElement>) => setSearch(event.target.value),
-                                        onTagSelected: (tag: GarbageContainerType | null) => setFilterBy((tag)),
+                                        onTagSelected: (tag: GarbageContainerType | null) => setFilterBy(([tag])),
                                     }
                                 }}
                                 initialState={{
                                     columns: {
-                                        columnVisibilityModel: {
-                                        }
+                                        columnVisibilityModel: {}
                                     }
                                 }}/>
                         </TableContainer>

@@ -2,11 +2,12 @@ import {useEffect, useState} from 'react';
 import {Link as RouterLink} from 'react-router-dom';
 // material
 import {
+    Box,
     Button,
-    Card,
-    Container,
+    Card, CircularProgress,
+    Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider,
     FormControl,
-    InputLabel,
+    InputLabel, LinearProgress,
     MenuItem,
     Select,
     Stack,
@@ -29,9 +30,27 @@ import {
 } from "@mui/x-data-grid";
 import {IContainerLocation} from "../types/IContainerLocation";
 import {useSnackbar} from 'notistack';
-import {GarbageContainerType, GarbageContainerTypeString, IGarbageContainer} from "../types/IGarbageContainer";
+import {
+    createContainerLocation, getAllContainerLocations,
+    getContainerLocaions,
+    getContainerLocation,
+    updateContainerLocation
+} from "../endpoints/ContainerLocations";
+import * as yup from 'yup';
+import {useFormik} from 'formik';
+import {IGarbageContainer} from "../types/IGarbageContainer";
+import {getGarbageContainer, updateGarbageContainer} from "../endpoints/GarbageContainer";
+import EditableMap, {IContainerLocationType} from "../components/EditableMap";
+import {MapLayerMouseEvent} from "react-map-gl";
+import {getOptimalContainers} from "../endpoints/OptimizerEndpoint";
+
 
 // ----------------------------------------------------------------------
+
+const newContainerLocationValidationSchema = yup.object({
+    latitude: yup.number().required(),
+    longitude: yup.number().required(),
+});
 
 export default function ContainerLocations() {
     const [loading, setLoading] = useState(false);
@@ -48,42 +67,72 @@ export default function ContainerLocations() {
     const [sortOrder, setSortOrder] = useState<string | null | undefined>(undefined);
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
-    const [filterBy, setFilterBy] = useState<GarbageContainerType | null>(null);
     const [rowCount, setRowCount] = useState(0);
-    const [rows, setRows] = useState<Array<IContainerLocation>>([]);
+    const [rows, setRows] = useState<Array<IContainerLocationType>>([]);
+    const [allMapMarkers, setAllMapMarkers] = useState<Array<IContainerLocationType>>([]);
+
+    const [editContainerLocation, setEditContainerLocation] = useState<IContainerLocation | null>(null);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
+    const formik = useFormik({
+        initialValues: {
+            latitude: 0,
+            longitude: 0,
+        },
+        validationSchema: newContainerLocationValidationSchema,
+        onSubmit: async (values) => {
+            if (editContainerLocation) {
+                let res = await updateContainerLocation(editContainerLocation.id, values);
+
+                if (res.status !== 200)
+                    return enqueueSnackbar("Error updating container location", {variant: 'error'});
+
+                let index = rows.findIndex(row => row.id === editContainerLocation.id);
+                if (index !== -1) {
+                    let newRow = {...rows[index], ...res.data};
+                    setRows([newRow, ...rows.filter(row => row.id !== editContainerLocation.id)]);
+                    setAllMapMarkers([newRow, ...allMapMarkers.filter(row => row.id !== editContainerLocation.id)]);
+                }
+
+                setEditContainerLocation(null);
+                setAddDialogOpen(false);
+                return enqueueSnackbar("Container location updated", {variant: 'success'});
+            }
+
+            let res = await createContainerLocation(values);
+
+            if (res.status !== 200 || res.data.id === undefined)
+                return enqueueSnackbar("Error creating container location", {variant: 'error'});
+
+            enqueueSnackbar("Container location created", {variant: 'success'});
+            setRows([...rows, res.data]);
+            setAllMapMarkers([...allMapMarkers, res.data]);
+            setAddDialogOpen(false);
+        },
+    });
 
     const loadData = async () => {
         try {
             setLoading(true);
-            /*
-            const {data} = await getAssets({
+
+            const {data} = await getContainerLocaions({
                 page,
                 pageSize,
                 sortBy: sortBy ?? '',
                 sortOrder: sortOrder ?? '',
                 term: delayedSearch,
-                assetType: filterBy ?? undefined
-            });*/
-            const data: IContainerLocation[] = [
-                {
-                    id: "test123",
-                    latitude: 32243.32,
-                    longitude: 32243.32,
-                },
-                {
-                    id: "te34543st123",
-                    latitude: 32243.32,
-                    longitude: 32243.32,
-                },
-                {
-                    id: "test14323",
-                    latitude: 32243.32,
-                    longitude: 32243.32,
-                }
-            ]
+            });
 
-            setRows(data);
-            setRowCount(data.length);
+            if (data == null || data.data == null)
+                throw new Error("No data returned");
+
+            setRows(data.data);
+            setAllMapMarkers(data.data);
+            setRowCount(data.count);
+
+            const allData = await getAllContainerLocations();
+            setAllMapMarkers(allData);
+
         } catch (e) {
             enqueueSnackbar("Error fetching data", {variant: 'error'});
         } finally {
@@ -92,13 +141,22 @@ export default function ContainerLocations() {
     }
     useEffect(() => {
         loadData();
-    }, [page, pageSize, sortBy, sortOrder, delayedSearch, filterBy]);
+    }, [page, pageSize, sortBy, sortOrder, delayedSearch]);
     useEffect(() => {
         setPage(0);
-    }, [sortBy, sortOrder, delayedSearch, filterBy])
+    }, [sortBy, sortOrder, delayedSearch])
 
-    const handleEdit = (id: number) => {
-//         navigate(`/dashboard/assets/${id}`);
+    const handleEdit = async (id: string) => {
+        let res = await getContainerLocation(id);
+
+        if (res.status !== 200)
+            return enqueueSnackbar("Error fetching container data", {variant: 'error'});
+
+        setEditContainerLocation(res.data);
+
+        formik.setValues(res.data);
+
+        setAddDialogOpen(true);
     }
 
 
@@ -108,17 +166,130 @@ export default function ContainerLocations() {
         {field: 'longitude', headerName: 'Longitude', editable: false, hideable: true, flex: 1},
     ]
 
+    const [countainerCountDialogOpen, setContainerCountDialogOpen] = useState(false);
+    const [containerCount, setContainerCount] = useState(0);
+    const [loadedOptimalPoints, setLoadedOptimalPoints] = useState(false);
+    const [loadingOptimalPoints, setLoadingOptimalPoints] = useState(false);
 
     return (
         <Page title="User">
+            <Dialog open={countainerCountDialogOpen} onClose={() => setContainerCountDialogOpen(false)}
+                    maxWidth={"xl"}>
+                <Box minWidth={"40vw"}
+                     minHeight={"30vh"}
+                >
+                    <DialogTitle>Optimize Containers</DialogTitle>
+                    {loadingOptimalPoints ? <LinearProgress/> : <>
+                        <DialogContent>
+                            <DialogContentText>
+                                This will generate provisional container positions, that are considered to be optimal,
+                                based on available data.
+                            </DialogContentText>
+
+                            <TextField
+                                sx={{marginTop: "2rem"}}
+                                label="Number of containers"
+                                value={containerCount}
+                                onChange={(e) => setContainerCount(parseInt(e.target.value))}
+                                type="number"
+                            />
+                        </DialogContent>
+
+                        <DialogActions>
+                            <Button onClick={() => setContainerCountDialogOpen(false)} color="primary">
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    setLoadingOptimalPoints(true);
+
+                                    let optimals = await getOptimalContainers(containerCount);
+
+                                    if (optimals === null)
+                                        return enqueueSnackbar("Error fetching optimal containers", {variant: 'error'});
+
+                                    enqueueSnackbar("Optimal containers loaded", {variant: 'success'});
+
+                                    setRows([...rows,
+                                        ...optimals.map((o, i) => ({
+                                            id: `provisional_${i}`,
+                                            latitude: o[0],
+                                            longitude: o[1],
+                                            type: "candidate"
+                                        } as unknown as IContainerLocation))]);
+
+                                    setAllMapMarkers([...allMapMarkers,
+                                        ...optimals.map((o, i) => ({
+                                            id: `provisional_${i}`,
+                                            latitude: o[0],
+                                            longitude: o[1],
+                                            type: "candidate"
+                                        } as unknown as IContainerLocation))]);
+
+                                    setLoadingOptimalPoints(false);
+                                    setLoadedOptimalPoints(true);
+                                    setContainerCountDialogOpen(false);
+
+                                }}
+                            >Submit</Button>
+                        </DialogActions>
+                    </>}
+                </Box>
+            </Dialog>
+
+
+            <Dialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+            >
+                <form onSubmit={formik.handleSubmit}>
+                    <Stack
+                        spacing={3}
+                        direction="column"
+                        justifyContent={"space-between"}
+                        sx={{
+                            minWidth: '520px',
+                            minHeight: '220px',
+                            padding: '24px',
+                        }}
+                    >
+                        <TextField
+                            fullWidth
+                            id="latitude"
+                            name="latitude"
+                            label="Latitude"
+                            value={formik.values.latitude}
+                            onChange={formik.handleChange}
+                            error={formik.errors.latitude != null}
+                            helperText={formik.errors.latitude}
+                        />
+                        <TextField
+                            fullWidth
+                            id="longitude"
+                            name="longitude"
+                            label="Longitude"
+                            value={formik.values.longitude}
+                            onChange={formik.handleChange}
+                            error={formik.errors.longitude != null}
+                            helperText={formik.errors.longitude}
+                        />
+                        <Button color="primary" variant="contained" fullWidth type="submit">
+                            Submit
+                        </Button>
+                    </Stack>
+                </form>
+            </Dialog>
+
             <Container>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
-                        Garbage Containers
+                        Container Locations
                     </Typography>
                     <Button variant="contained" component={RouterLink} to="#"
-                            startIcon={<Iconify icon="eva:plus-fill"/>}>
-                        Add Garbage Container
+                            startIcon={<Iconify icon="eva:plus-fill"/>} onClick={
+                        () => setAddDialogOpen(true)
+                    }>
+                        Add Container Location
                     </Button>
                 </Stack>
 
@@ -147,65 +318,101 @@ export default function ContainerLocations() {
                                 disableSelectionOnClick
                                 autoHeight
                                 onCellDoubleClick={(params) => handleEdit(params.row.id)}
-                                components={{
-                                    Toolbar: CustomToolbar,
-                                }}
-                                componentsProps={{
-                                    toolbar: {
-                                        value: search,
-                                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => setSearch(event.target.value),
-                                        onTagSelected: (tag: GarbageContainerType | null) => setFilterBy((tag)),
-                                    }
-                                }}
+
+
                                 initialState={{
                                     columns: {
-                                        columnVisibilityModel: {
-                                        }
+                                        columnVisibilityModel: {}
                                     }
                                 }}/>
                         </TableContainer>
                     </Scrollbar>
                 </Card>
+
+                <Divider sx={{marginY: "2rem"}}/>
+
+                <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+                    <Typography variant="h4" gutterBottom>
+                        Map
+                    </Typography>
+
+                    {loadedOptimalPoints && <Button variant="contained" component={RouterLink} to="#"
+                                                    startIcon={<Iconify icon="majesticons:map-marker-path-line"/>}
+                                                    onClick={
+                                                        async () => {
+                                                            let res = await Promise.all(allMapMarkers.map(({
+                                                                                                               latitude,
+                                                                                                               longitude
+                                                                                                           }) => {
+                                                                return createContainerLocation({latitude, longitude});
+                                                            }));
+
+                                                            if (res === null)
+                                                                return enqueueSnackbar("Error creating container locations", {variant: 'error'});
+
+                                                            setAllMapMarkers([
+                                                                ...allMapMarkers.filter(({id}) => !id.startsWith("provisional_")),
+                                                                ...res.map((r, i) => ({
+                                                                    id: r.data.id,
+                                                                    latitude: r.data.latitude,
+                                                                    longitude: r.data.longitude,
+
+                                                                }))
+
+                                                            ]);
+
+                                                            enqueueSnackbar("All candidate positions inserterd", {variant: 'success'});
+                                                            setAddDialogOpen(false);
+                                                        }
+                                                    }>
+                        Accept all candidates
+                    </Button>}
+
+                    {!loadedOptimalPoints && <Button variant="contained" component={RouterLink} to="#"
+                                                     startIcon={<Iconify icon="majesticons:map-marker-path-line"/>}
+                                                     onClick={
+                                                         () => setContainerCountDialogOpen(true)
+                                                     }>
+                        Get Candidate Locations
+                    </Button>}
+                </Stack>
+
+                <EditableMap
+                    paths={[]}
+                    containers={allMapMarkers}
+                    onUpdateFunc={async (newContainer) => {
+                        let res = await updateContainerLocation(newContainer.id, newContainer);
+
+                        if (res.status !== 200) {
+                            enqueueSnackbar("Error updating container location", {variant: 'error'});
+                            return null;
+                        }
+
+                        enqueueSnackbar("Container location updated", {variant: 'success'});
+                        setRows(allMapMarkers.map(c => c.id === newContainer.id ? res.data : c));
+                        setAllMapMarkers(allMapMarkers.map(c => c.id === newContainer.id ? res.data : c));
+
+                        return res.data;
+                    }}
+                    onAddNewMarker={async (newContainer) => {
+                        let res = await createContainerLocation(newContainer);
+
+                        if (res.status !== 200 || res.data.id === undefined) {
+                            enqueueSnackbar("Error creating container location", {variant: 'error'});
+                            return null;
+                        }
+
+                        enqueueSnackbar("Container location created", {variant: 'success'});
+                        setRows([...rows, res.data]);
+                        setAllMapMarkers([...allMapMarkers, res.data]);
+
+                        return res.data;
+                    }}
+                    width={'100%'}
+                    height={'80vh'}
+                />
             </Container>
         </Page>
     );
 }
 
-
-function CustomToolbar(props: any) {
-    const [filterValue, setFilterValue] = useState<string | GarbageContainerType>('None');
-    useEffect(() => {
-        props.onTagSelected(filterValue !== 'None' ? (filterValue as GarbageContainerType) ?? null : null);
-    }, [filterValue]);
-    return (
-        <GridToolbarContainer>
-            <Stack direction='row' spacing={2}>
-                <GridToolbarColumnsButton/>
-                <GridToolbarDensitySelector/>
-                <TextField
-                    size='small'
-                    placeholder='Search'
-                    value={props.value}
-                    onChange={props.onChange}
-                    type='search'/>
-                <FormControl sx={{minWidth: 400}} size='small'>
-                    <InputLabel id="selectAssetTypeLabel">Asset Type</InputLabel>
-                    <Select
-                        labelId="selectAssetTypeLabel"
-                        label="Asset Type"
-                        size='small'
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                    >
-                        <MenuItem value={"None"}>
-                            <em>None</em>
-                        </MenuItem>
-                        {Object.values(GarbageContainerType).filter(t => !isNaN(Number(t))).map(t => t as GarbageContainerType).map((type) => (
-                            <MenuItem key={type} value={type}>{GarbageContainerTypeString(type)}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Stack>
-        </GridToolbarContainer>
-    );
-}
