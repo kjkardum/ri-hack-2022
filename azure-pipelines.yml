@@ -108,7 +108,7 @@ jobs:
       containerRegistry: '$(dockerRegistryServiceConnection)'
       repository: 'chatbot'
       command: 'build'
-      Dockerfile: '**/Dockerfile'
+      Dockerfile: 'chatbot/app/Dockerfile'
       tags: |
         $(tag)
         latest
