@@ -56,6 +56,9 @@ class Optimizer:
         covered = LpVariable.dicts(
             "Choice", (range(len(self.buildings))), upBound=5)
 
+        covered = LpVariable.dicts(
+            "Choice", (range(len(self.buildings))), upBound=10)
+
         # print(len(candidates))
 
         prob = LpProblem("Waste_Problem")
