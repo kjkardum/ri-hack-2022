@@ -105,7 +105,7 @@ jobs:
   - task: Docker@2
     displayName: Build a docker image
     inputs:
-      containerRegistry: '$(dockerRegistryServiceConnection)'
+      containerRegistry: 'rihackregistry.azurecr.io'
       repository: 'chatbot'
       command: 'build'
       Dockerfile: 'chatbot/app/Dockerfile'
