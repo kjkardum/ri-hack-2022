@@ -4,7 +4,7 @@ import {Link as RouterLink} from 'react-router-dom';
 import {
     Button,
     Card,
-    Container, Dialog, Divider,
+    Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider,
     FormControl,
     InputLabel,
     MenuItem,
@@ -157,8 +157,49 @@ export default function ContainerLocations() {
         {field: 'longitude', headerName: 'Longitude', editable: false, hideable: true, flex: 1},
     ]
 
+    const [countainerCountDialogOpen, setContainerCountDialogOpen] = useState(false);
+    const [containerCount, setContainerCount] = useState(0);
     return (
         <Page title="User">
+            <Dialog open={countainerCountDialogOpen} onClose={() => setContainerCountDialogOpen(false)}>
+                <DialogTitle>Optimize Containers</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        This will generate provisional container positions, that are considered to be optimal,
+                        based on available data.
+                    </DialogContentText>
+
+                    <TextField
+                        label="Number of containers"
+                        value={containerCount}
+                        onChange={(e) => setContainerCount(parseInt(e.target.value))}
+                        type="number"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setContainerCountDialogOpen(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={async () => {
+                            let optimals = await getOptimalContainers(10);
+
+                            if (optimals === null)
+                                return enqueueSnackbar("Error fetching optimal containers", {variant: 'error'});
+
+                            setRows([...rows,
+                                ...optimals.map((o, i) => ({
+                                    id: `provisional_${i}`,
+                                    latitude: o[0],
+                                    longitude: o[1],
+                                    type: "candidate"
+                                } as unknown as IContainerLocation))]);
+                        }}
+                    ></Button>
+                </DialogActions>
+            </Dialog>
+
+
             <Dialog
                 open={addDialogOpen}
                 onClose={() => setAddDialogOpen(false)}
@@ -258,19 +299,7 @@ export default function ContainerLocations() {
                     </Typography>
                     <Button variant="contained" component={RouterLink} to="#"
                             startIcon={<Iconify icon="majesticons:map-marker-path-line"/>} onClick={
-                        async () => {
-                            let optimals = await getOptimalContainers(10);
-
-                            if (optimals === null)
-                                return enqueueSnackbar("Error fetching optimal containers", {variant: 'error'});
-
-                            setRows([...rows,
-                                ...optimals.map(o => ({
-                                    latitude: o[0],
-                                    longitude: o[1],
-                                    type: "candidate"
-                                } as unknown as IContainerLocation))]);
-                        }
+                        () => setContainerCountDialogOpen(true)
                     }>
                         Get Candidate Locations
                     </Button>
