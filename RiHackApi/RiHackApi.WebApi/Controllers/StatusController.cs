@@ -36,6 +36,7 @@ public class StatusController : BaseApiController
             FrontendUrl = _appSettings.FrontendUrl,
             ChatbotUrl = _appSettings.ChatbotUrl,
             OptimizerUrl = _appSettings.OptimizerUrl,
+            ChatbotApiKey = _appSettings.ChatbotApiKey,
         });
     }
 }
