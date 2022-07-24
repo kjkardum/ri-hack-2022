@@ -45,7 +45,7 @@ export default function Routing() {
                     </Typography>
                     <Button
                         onClick={async () => {
-                            let data = await getOptimalRute(5, 20);
+                            let data = await getOptimalRute(10, 10);
 
                             if (data === null)
                                 return enqueueSnackbar("Error fetching data", {variant: 'error'});

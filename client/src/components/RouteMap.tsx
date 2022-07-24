@@ -14,7 +14,7 @@ const RouteMap = ({width, height, lines, points, onClickFunc}: {
     width: number | string,
     height: number | string
 }) => {
-
+    console.log(lines[1])
     return (
         <Map
             initialViewState={{
@@ -38,7 +38,7 @@ const RouteMap = ({width, height, lines, points, onClickFunc}: {
                     properties: {},
                     geometry: {
                         type: "LineString",
-                        coordinates: lines[0]?.map(value => [value[1], value[0]])
+                        coordinates: lines[0]
                     }
                 }
             }>

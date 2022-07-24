@@ -17,6 +17,17 @@ export interface IContainerLocationType extends IContainerLocation {
     type?: "container" | "candidate";
 }
 
+const colors = [
+    rgba(3, 170, 238, 0.5),
+    rgba(255, 0, 0, 0.5),
+    rgba(0, 255, 0, 0.5),
+    rgba(0, 0, 255, 0.5),
+    rgba(255, 255, 0, 0.5),
+    rgba(255, 0, 255, 0.5),
+    rgba(0, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.5),
+]
+
 const EditableMap = ({width, height, paths, containers, onAddNewMarker, onUpdateFunc}: {
     paths: [number, number][],
     containers: IContainerLocationType[],
@@ -69,21 +80,7 @@ const EditableMap = ({width, height, paths, containers, onAddNewMarker, onUpdate
             }}
         >
             <NavigationControl position="bottom-right"/>
-            <Source id="polylineLayer" type="geojson" data={data}>
-                <Layer
-                    id="lineLayer"
-                    type="line"
-                    source="my-data"
-                    layout={{
-                        "line-join": "round",
-                        "line-cap": "round"
-                    }}
-                    paint={{
-                        "line-color": "rgba(3, 170, 238, 0.5)",
-                        "line-width": 5
-                    }}
-                />
-            </Source>
+
             {mapContainers.map((value, index, array) => (
                 <Marker
                     key={value.id}
