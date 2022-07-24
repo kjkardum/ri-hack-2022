@@ -51,7 +51,10 @@ class Optimizer:
         """
 
         candidates = random.sample(
-            [(x["lat"], x["lon"]) for x in self.buildings], 500)  # workaround
+            [(x["lat"], x["lon"]) for x in self.buildings], 300)  # workaround
+
+        covered = LpVariable.dicts(
+            "Choice", (range(len(self.buildings))), upBound=5)
 
         # print(len(candidates))
 
@@ -73,6 +76,16 @@ class Optimizer:
                     self.dist_multiplier(great_circle(
                         c, (b["lat"], b["lon"])
                     ).m) * choices[i]
+
+                covered += b["rating"] * \
+                    self.dist_multiplier(great_circle(
+                        c, (b["lat"], b["lon"])
+                    ).m) * choices[i]
+
+                # prob += b["rating"] * \
+                #     self.dist_multiplier(great_circle(
+                #         c, (b["lat"], b["lon"])
+                #     ).m) * choices[i] <= 5
 
         prob += -LAE
 
