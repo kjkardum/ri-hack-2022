@@ -8,6 +8,8 @@ variables:
   ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
   ApplicationSettings.ChatbotUrl: 'https://ricyclechat.azurewebsites.net/'
   ApplicationSettings.OptimizerUrl: 'https://ricycleoptimizator.azurewebsites.net/'
+  ApplicationSettings.ChatbotApiKey: $(chatbot_key)
+  ApplicationSettings.OptimizerApiKey: $(optimizer_key)
   dockerRegistryServiceConnection: '52e45700-e5c2-4088-8055-49664180a631'
   containerRegistry: 'rihackregistry.azurecr.io'
   tag: '$(Build.BuildId)'
@@ -69,7 +71,6 @@ jobs:
   displayName: 'React Client'
   pool:
     name: Default
-  condition: false
   steps:
   - script: npm install -g yarn
     displayName: 'Install yarn'
@@ -99,7 +100,6 @@ jobs:
   displayName: 'GPT3 Chatbot'
   pool:
     name: Default
-  condition: false
   steps:
   - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/chatbot/app/Dockerfile --build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)" -t $(containerRegistry)/chatbot:$(tag) -t $(containerRegistry)/chatbot:latest --platform linux/amd64 $(Build.SourcesDirectory)/chatbot/app
     displayName: Build application
@@ -117,7 +117,6 @@ jobs:
   displayName: 'OSRM Routering optimizer'
   pool:
     name: Default
-  condition: false
   steps:
   - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/routering/app/Dockerfile --build-arg API_KEY="$(optimizer_key)" -t $(containerRegistry)/routering:$(tag) -t $(containerRegistry)/routering:latest --platform linux/amd64 $(Build.SourcesDirectory)/routering/app
     displayName: Build application
