@@ -95,5 +95,5 @@ jobs:
       azureSubscription: 'Visual Studio Enterprise Subscription – MPN(1)(a00a1242-cc2b-40b2-b179-5e934bc628b6)'
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
-      inlineScript: az storage blob upload-batch --connection-string "$(blob_connection_string)" -d '\$web' --account-name "rihack" -s client/build/ --overwrite=true
+      inlineScript: az storage blob upload-batch --connection-string "$(blob_connection_string)" -d '$web' --account-name "rihack" -s client/build/ --overwrite=true
       
