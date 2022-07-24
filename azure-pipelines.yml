@@ -105,17 +105,19 @@ jobs:
   pool:
     name: Default
   steps:
-  - task: Docker@2
-    displayName: Build a docker image
-    inputs:
-      containerRegistry: '$(dockerRegistryServiceConnection)'
-      repository: 'chatbot'
-      command: 'build'
-      Dockerfile: 'chatbot/app/Dockerfile'
-      tags: |
-        $(tag)
-        latest
-      arguments: '--build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)"'
+  - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/chatbot/app/Dockerfile --build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)" -t $(containerRegistry)/chatbot:$(tag) -t $(containerRegistry)/chatbot:latest --platform linux/amd64 $(Build.SourcesDirectory)/chatbot/app
+    displayName: Build application
+#  - task: Docker@2
+#    displayName: Build a docker image
+#    inputs:
+#      containerRegistry: '$(dockerRegistryServiceConnection)'
+#      repository: 'chatbot'
+#      command: 'buildx build'
+#      Dockerfile: 'chatbot/app/Dockerfile'
+#      tags: |
+#        $(tag)
+#        latest
+#      arguments: '--build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)"'
   - task: Docker@2
     displayName: Push an image to container registry
     inputs:
