@@ -13,6 +13,7 @@ import DashboardApp from './pages/DashboardApp';
 import HomePage from "./pages/HomePage";
 import ContainerLocations from "./pages/ContainerLocations";
 import GarbageContainers from "./pages/GarbageContainers";
+import Routing from "./pages/Routing";
 
 
 // ----------------------------------------------------------------------
@@ -27,8 +28,7 @@ export default function Router() {
         { path: 'user', element: <User /> },
         { path: 'container-locations', element: <ContainerLocations /> },
         { path: 'garbage-containers', element: <GarbageContainers /> },
-        { path: 'products', element: <Products /> },
-        { path: 'blog', element: <Blog /> },
+        { path: 'routing', element: <Routing /> },
       ],
     },
     {

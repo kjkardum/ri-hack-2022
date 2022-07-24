@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Refit;
 using RiHackApi.Business.Services;
 using RiHackApi.Common.Interfaces;
 using RiHackApi.Common.Settings;
@@ -10,6 +11,7 @@ using RiHackApi.Interfaces.Services;
 using RiHackApi.Persistence.Contexts;
 using RiHackApi.Persistence.Entities;
 using RiHackApi.Persistence.Repositories;
+using RiHackApi.Router.interfaces;
 using RiHackApi.Shared.Services;
 using RiHackApi.WebApi.Helpers;
 using RiHackApi.WebApi.Services;
@@ -57,9 +59,19 @@ builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
-builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(ApplicationRepository<>));
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(ApplicationRepository<>));
 
 builder.Services.AddScoped<IGarbageContainerService, GarbageContainerService>();
+
+builder.Services.AddRefitClient<IOptimizerService>()
+    .ConfigureHttpClient(c =>
+        c.BaseAddress =
+            new Uri(builder
+                        .Configuration
+                        .GetSection("ApplicationSettings").Get<ApplicationSettings>().OptimizerUrl ??
+                    string.Empty));
+//you could add Polly here to handle HTTP 429 / HTTP 503 etc
+
 
 var app = builder.Build();
 
@@ -67,7 +79,7 @@ using (var scope = app.Services.CreateScope())
 {
     var identityDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await identityDb.Database.MigrateAsync();
-    
+
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
     await DefaultSuperAdmin.SeedAsync(userManager, roleManager);

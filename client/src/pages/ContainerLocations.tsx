@@ -4,7 +4,7 @@ import {Link as RouterLink} from 'react-router-dom';
 import {
     Button,
     Card,
-    Container, Dialog,
+    Container, Dialog, Divider,
     FormControl,
     InputLabel,
     MenuItem,
@@ -39,6 +39,9 @@ import * as yup from 'yup';
 import {useFormik} from 'formik';
 import {IGarbageContainer} from "../types/IGarbageContainer";
 import {getGarbageContainer, updateGarbageContainer} from "../endpoints/GarbageContainer";
+import EditableMap, {IContainerLocationType} from "../components/EditableMap";
+import {MapLayerMouseEvent} from "react-map-gl";
+import {getOptimalContainers} from "../endpoints/OptimizerEndpoint";
 
 
 // ----------------------------------------------------------------------
@@ -64,7 +67,7 @@ export default function ContainerLocations() {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
     const [rowCount, setRowCount] = useState(0);
-    const [rows, setRows] = useState<Array<IContainerLocation>>([]);
+    const [rows, setRows] = useState<Array<IContainerLocationType>>([]);
 
     const [editContainerLocation, setEditContainerLocation] = useState<IContainerLocation | null>(null);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -246,6 +249,65 @@ export default function ContainerLocations() {
                         </TableContainer>
                     </Scrollbar>
                 </Card>
+
+                <Divider sx={{marginY: "2rem"}}/>
+
+                <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+                    <Typography variant="h4" gutterBottom>
+                        Map
+                    </Typography>
+                    <Button variant="contained" component={RouterLink} to="#"
+                            startIcon={<Iconify icon="majesticons:map-marker-path-line"/>} onClick={
+                        async () => {
+                            let optimals = await getOptimalContainers(10);
+
+                            if (optimals === null)
+                                return enqueueSnackbar("Error fetching optimal containers", {variant: 'error'});
+
+                            setRows([...rows,
+                                ...optimals.map(o => ({
+                                    latitude: o[0],
+                                    longitude: o[1],
+                                    type: "candidate"
+                                } as unknown as IContainerLocation))]);
+                        }
+                    }>
+                        Get Candidate Locations
+                    </Button>
+                </Stack>
+
+                <EditableMap
+                    paths={[]}
+                    containers={rows}
+                    onUpdateFunc={async (newContainer) => {
+                        let res = await updateContainerLocation(newContainer.id, newContainer);
+
+                        if (res.status !== 200) {
+                            enqueueSnackbar("Error updating container location", {variant: 'error'});
+                            return null;
+                        }
+
+                        enqueueSnackbar("Container location updated", {variant: 'success'});
+                        setRows(rows.map(c => c.id === newContainer.id ? res.data : c));
+
+                        return res.data;
+                    }}
+                    onAddNewMarker={async (newContainer) => {
+                        let res = await createContainerLocation(newContainer);
+
+                        if (res.status !== 200 || res.data.id === undefined) {
+                            enqueueSnackbar("Error creating container location", {variant: 'error'});
+                            return null;
+                        }
+
+                        enqueueSnackbar("Container location created", {variant: 'success'});
+                        setRows([...rows, res.data]);
+
+                        return res.data;
+                    }}
+                    width={'100%'}
+                    height={'80vh'}
+                />
             </Container>
         </Page>
     );

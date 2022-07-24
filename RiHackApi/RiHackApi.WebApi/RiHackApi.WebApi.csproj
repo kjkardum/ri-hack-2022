@@ -15,6 +15,8 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Refit" Version="6.3.2" />
+        <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
         <PackageReference Include="Serilog" Version="2.11.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
         <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
@@ -28,6 +30,7 @@
       <ProjectReference Include="..\RiHackApi.Common\RiHackApi.Common.csproj" />
       <ProjectReference Include="..\RiHackApi.Identity\RiHackApi.Identity.csproj" />
       <ProjectReference Include="..\RiHackApi.Interfaces\RiHackApi.Interfaces.csproj" />
+      <ProjectReference Include="..\RiHackApi.Router\RiHackApi.Router.csproj" />
       <ProjectReference Include="..\RiHackApi.Shared\RiHackApi.Shared.csproj" />
     </ItemGroup>
 
