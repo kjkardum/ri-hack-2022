@@ -11,6 +11,7 @@ variables:
   AppConfiguration.IsProduction: 'true'
   ConnectionStrings.ApplicationConnection: $(prod_connection_string)
   ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
+  containerRegistry: 'rihackregistry.azurecr.io'
 
 jobs:
 - job: mainBackend
@@ -96,4 +97,29 @@ jobs:
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: az storage blob upload-batch --connection-string "$(blob_connection_string)" -d '$web' --account-name "rihack" -s client/build/ --overwrite=true
-      
+- job: chatbot
+  displayName: 'GPT3 Chatbot'
+  pool:
+    name: Default
+  steps:
+  - task: Docker@2
+    displayName: Build a docker image
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: 'chatbot'
+      command: 'build'
+      Dockerfile: '**/Dockerfile'
+      tags: |
+        $(tag)
+        latest
+      arguments: '--build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)"'
+  - task: Docker@2
+    displayName: Push an image to container registry
+    inputs:
+      containerRegistry: $(dockerRegistryServiceConnection)
+      repository: 'chatbot'
+      command: 'push'
+      tags: |
+        $(tag)
+        latest
+  
