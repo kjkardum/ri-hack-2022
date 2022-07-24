@@ -16,18 +16,20 @@ public class GarbageContainerService : IGarbageContainerService
         _garbageContainerRepository = garbageContainerRepository;
     }
 
-    public async Task AddContainerLocation(ContainerLocation containerLocation)
+    public async Task<ContainerLocation> AddContainerLocation(ContainerLocation containerLocation)
     {
         containerLocation.Id = Guid.Empty;
         await _containerLocationRepository.AddAsync(containerLocation);
         await _containerLocationRepository.SaveAllChanges();
+        return containerLocation;
     }
 
-    public async Task AddGarbageContainer(GarbageContainer garbageContainer)
+    public async Task<GarbageContainer> AddGarbageContainer(GarbageContainer garbageContainer)
     {
         garbageContainer.Id = Guid.Empty;
         await _garbageContainerRepository.AddAsync(garbageContainer);
         await _garbageContainerRepository.SaveAllChanges();
+        return garbageContainer;
     }
 
     public Task<ContainerLocation> GetContainerLocation(Guid id)
@@ -54,7 +56,7 @@ public class GarbageContainerService : IGarbageContainerService
     {
         var query = _containerLocationRepository
             .AsQueryable()
-            .Skip((page - 1) * pageSize)
+            .Skip((page) * pageSize)
             .Take(pageSize);
         
         return new PaginatedResponse<ContainerLocation>
@@ -70,7 +72,7 @@ public class GarbageContainerService : IGarbageContainerService
     {
         var query = _garbageContainerRepository
             .AsQueryable()
-            .Skip((page - 1) * pageSize)
+            .Skip((page) * pageSize)
             .Take(pageSize);
         return new PaginatedResponse<GarbageContainer>
         {
@@ -81,9 +83,9 @@ public class GarbageContainerService : IGarbageContainerService
         };
     }
 
-    public Task<ICollection<GarbageContainer>> GetAllContainerLocations()
+    public Task<ICollection<ContainerLocation>> GetAllContainerLocations()
     {
-        return _garbageContainerRepository.GetAllAsync();
+        return _containerLocationRepository.GetAllAsync();
     }
 
     public async Task<ICollection<GarbageContainer>> GetAllGarbageContainers()
@@ -103,6 +105,7 @@ public class GarbageContainerService : IGarbageContainerService
         existingContainer.Label = garbageContainer.Label;
         existingContainer.Type = garbageContainer.Type;
         existingContainer.MaxWeight = garbageContainer.MaxWeight;
+        existingContainer.ContainerLocationId = garbageContainer.ContainerLocationId;
         
         _garbageContainerRepository.Update(existingContainer);
         await _garbageContainerRepository.SaveAllChanges();

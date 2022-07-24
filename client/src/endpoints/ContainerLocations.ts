@@ -3,7 +3,7 @@ import {ContainerLocationsQuery} from "./queries/ContainerLocationsQuery";
 import {IContainerLocation} from "../types/IContainerLocation";
 
 export const getContainerLocaions = async (query: ContainerLocationsQuery) => {
-    let url = `/Appraisal?page=${query.page}&pageSize=${query.pageSize}`;
+    let url = `/ContainerLocation/paginated?page=${query.page}&pageSize=${query.pageSize}`;
     if (query.term) {
         url += `&term=${query.term}`;
     }
@@ -11,17 +11,21 @@ export const getContainerLocaions = async (query: ContainerLocationsQuery) => {
         url += `&sortBy=${query.sortBy}&sortOrder=${query.sortOrder}`;
     }
 
-    return await axios.get<{containerLocations: Array<IContainerLocation>, rowCount: number}>(url);
+    return await axios.get<{data: Array<IContainerLocation>, count: number}>(url);
+}
+
+export const getAllContainerLocations = async () => {
+    return await axios.get<Array<IContainerLocation>>('/ContainerLocation');
 }
 
 export const createContainerLocation = async (containerLocation: IContainerLocation) => {
-    return await axios.post<{ id: string }>('/GarbageContainer', containerLocation);
+    return await axios.post<IContainerLocation>('/ContainerLocation', containerLocation);
 }
 
-export const getAppraisal = async (id: string) => {
-    return await axios.get<IContainerLocation>(`/GarbageContainer/${id}`);
+export const getContainerLocation = async (id: string) => {
+    return await axios.get<IContainerLocation>(`/ContainerLocation/${id}`);
 }
 
-export const updateAppraisal = async (id: string, containerLocation: IContainerLocation) => {
-    return await axios.put(`/GarbageContainer`, {...containerLocation, id});
+export const updateContainerLocation = async (id: string, containerLocation: IContainerLocation) => {
+    return await axios.put<IContainerLocation>(`/ContainerLocation/${id}`, containerLocation);
 }

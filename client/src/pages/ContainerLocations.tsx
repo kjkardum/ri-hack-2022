@@ -4,7 +4,7 @@ import {Link as RouterLink} from 'react-router-dom';
 import {
     Button,
     Card,
-    Container,
+    Container, Dialog,
     FormControl,
     InputLabel,
     MenuItem,
@@ -29,9 +29,24 @@ import {
 } from "@mui/x-data-grid";
 import {IContainerLocation} from "../types/IContainerLocation";
 import {useSnackbar} from 'notistack';
-import {GarbageContainerType, GarbageContainerTypeString, IGarbageContainer} from "../types/IGarbageContainer";
+import {
+    createContainerLocation,
+    getContainerLocaions,
+    getContainerLocation,
+    updateContainerLocation
+} from "../endpoints/ContainerLocations";
+import * as yup from 'yup';
+import {useFormik} from 'formik';
+import {IGarbageContainer} from "../types/IGarbageContainer";
+import {getGarbageContainer, updateGarbageContainer} from "../endpoints/GarbageContainer";
+
 
 // ----------------------------------------------------------------------
+
+const newContainerLocationValidationSchema = yup.object({
+    latitude: yup.number().required(),
+    longitude: yup.number().required(),
+});
 
 export default function ContainerLocations() {
     const [loading, setLoading] = useState(false);
@@ -48,42 +63,64 @@ export default function ContainerLocations() {
     const [sortOrder, setSortOrder] = useState<string | null | undefined>(undefined);
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
-    const [filterBy, setFilterBy] = useState<GarbageContainerType | null>(null);
     const [rowCount, setRowCount] = useState(0);
     const [rows, setRows] = useState<Array<IContainerLocation>>([]);
+
+    const [editContainerLocation, setEditContainerLocation] = useState<IContainerLocation | null>(null);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
+    const formik = useFormik({
+        initialValues: {
+            latitude: 0,
+            longitude: 0,
+        },
+        validationSchema: newContainerLocationValidationSchema,
+        onSubmit: async (values) => {
+            if (editContainerLocation) {
+                let res = await updateContainerLocation(editContainerLocation.id, values);
+
+                if (res.status !== 200)
+                    return enqueueSnackbar("Error updating container location", {variant: 'error'});
+
+                let index = rows.findIndex(row => row.id === editContainerLocation.id);
+                if (index !== -1) {
+                    let newRow = {...rows[index], ...res.data};
+                    setRows([newRow, ...rows.filter(row => row.id !== editContainerLocation.id)]);
+                }
+
+                setEditContainerLocation(null);
+                setAddDialogOpen(false);
+                return enqueueSnackbar("Container location updated", {variant: 'success'});
+            }
+
+            let res = await createContainerLocation(values);
+
+            if (res.status !== 200 || res.data.id === undefined)
+                return enqueueSnackbar("Error creating container location", {variant: 'error'});
+
+            enqueueSnackbar("Container location created", {variant: 'success'});
+            setRows([...rows, res.data]);
+            setAddDialogOpen(false);
+        },
+    });
 
     const loadData = async () => {
         try {
             setLoading(true);
-            /*
-            const {data} = await getAssets({
+
+            const {data} = await getContainerLocaions({
                 page,
                 pageSize,
                 sortBy: sortBy ?? '',
                 sortOrder: sortOrder ?? '',
                 term: delayedSearch,
-                assetType: filterBy ?? undefined
-            });*/
-            const data: IContainerLocation[] = [
-                {
-                    id: "test123",
-                    latitude: 32243.32,
-                    longitude: 32243.32,
-                },
-                {
-                    id: "te34543st123",
-                    latitude: 32243.32,
-                    longitude: 32243.32,
-                },
-                {
-                    id: "test14323",
-                    latitude: 32243.32,
-                    longitude: 32243.32,
-                }
-            ]
+            });
 
-            setRows(data);
-            setRowCount(data.length);
+            if (data == null || data.data == null)
+                throw new Error("No data returned");
+
+            setRows(data.data);
+            setRowCount(data.count);
         } catch (e) {
             enqueueSnackbar("Error fetching data", {variant: 'error'});
         } finally {
@@ -92,13 +129,22 @@ export default function ContainerLocations() {
     }
     useEffect(() => {
         loadData();
-    }, [page, pageSize, sortBy, sortOrder, delayedSearch, filterBy]);
+    }, [page, pageSize, sortBy, sortOrder, delayedSearch]);
     useEffect(() => {
         setPage(0);
-    }, [sortBy, sortOrder, delayedSearch, filterBy])
+    }, [sortBy, sortOrder, delayedSearch])
 
-    const handleEdit = (id: number) => {
-//         navigate(`/dashboard/assets/${id}`);
+    const handleEdit = async (id: string) => {
+        let res = await getContainerLocation(id);
+
+        if (res.status !== 200)
+            return enqueueSnackbar("Error fetching container data", {variant: 'error'});
+
+        setEditContainerLocation(res.data);
+
+        formik.setValues(res.data);
+
+        setAddDialogOpen(true);
     }
 
 
@@ -108,17 +154,60 @@ export default function ContainerLocations() {
         {field: 'longitude', headerName: 'Longitude', editable: false, hideable: true, flex: 1},
     ]
 
-
     return (
         <Page title="User">
+            <Dialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+            >
+                <form onSubmit={formik.handleSubmit}>
+                    <Stack
+                        spacing={3}
+                        direction="column"
+                        justifyContent={"space-between"}
+                        sx={{
+                            minWidth: '520px',
+                            minHeight: '220px',
+                            padding: '24px',
+                        }}
+                    >
+                        <TextField
+                            fullWidth
+                            id="latitude"
+                            name="latitude"
+                            label="Latitude"
+                            value={formik.values.latitude}
+                            onChange={formik.handleChange}
+                            error={formik.errors.latitude != null}
+                            helperText={formik.errors.latitude}
+                        />
+                        <TextField
+                            fullWidth
+                            id="longitude"
+                            name="longitude"
+                            label="Longitude"
+                            value={formik.values.longitude}
+                            onChange={formik.handleChange}
+                            error={formik.errors.longitude != null}
+                            helperText={formik.errors.longitude}
+                        />
+                        <Button color="primary" variant="contained" fullWidth type="submit">
+                            Submit
+                        </Button>
+                    </Stack>
+                </form>
+            </Dialog>
+
             <Container>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
-                        Garbage Containers
+                        Container Locations
                     </Typography>
                     <Button variant="contained" component={RouterLink} to="#"
-                            startIcon={<Iconify icon="eva:plus-fill"/>}>
-                        Add Garbage Container
+                            startIcon={<Iconify icon="eva:plus-fill"/>} onClick={
+                        () => setAddDialogOpen(true)
+                    }>
+                        Add Container Location
                     </Button>
                 </Stack>
 
@@ -147,20 +236,11 @@ export default function ContainerLocations() {
                                 disableSelectionOnClick
                                 autoHeight
                                 onCellDoubleClick={(params) => handleEdit(params.row.id)}
-                                components={{
-                                    Toolbar: CustomToolbar,
-                                }}
-                                componentsProps={{
-                                    toolbar: {
-                                        value: search,
-                                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => setSearch(event.target.value),
-                                        onTagSelected: (tag: GarbageContainerType | null) => setFilterBy((tag)),
-                                    }
-                                }}
+
+
                                 initialState={{
                                     columns: {
-                                        columnVisibilityModel: {
-                                        }
+                                        columnVisibilityModel: {}
                                     }
                                 }}/>
                         </TableContainer>
@@ -171,41 +251,3 @@ export default function ContainerLocations() {
     );
 }
 
-
-function CustomToolbar(props: any) {
-    const [filterValue, setFilterValue] = useState<string | GarbageContainerType>('None');
-    useEffect(() => {
-        props.onTagSelected(filterValue !== 'None' ? (filterValue as GarbageContainerType) ?? null : null);
-    }, [filterValue]);
-    return (
-        <GridToolbarContainer>
-            <Stack direction='row' spacing={2}>
-                <GridToolbarColumnsButton/>
-                <GridToolbarDensitySelector/>
-                <TextField
-                    size='small'
-                    placeholder='Search'
-                    value={props.value}
-                    onChange={props.onChange}
-                    type='search'/>
-                <FormControl sx={{minWidth: 400}} size='small'>
-                    <InputLabel id="selectAssetTypeLabel">Asset Type</InputLabel>
-                    <Select
-                        labelId="selectAssetTypeLabel"
-                        label="Asset Type"
-                        size='small'
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                    >
-                        <MenuItem value={"None"}>
-                            <em>None</em>
-                        </MenuItem>
-                        {Object.values(GarbageContainerType).filter(t => !isNaN(Number(t))).map(t => t as GarbageContainerType).map((type) => (
-                            <MenuItem key={type} value={type}>{GarbageContainerTypeString(type)}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Stack>
-        </GridToolbarContainer>
-    );
-}

@@ -5,8 +5,8 @@ namespace RiHackApi.Interfaces.Services;
 
 public interface IGarbageContainerService
 {
-    Task AddContainerLocation(ContainerLocation containerLocation);
-    Task AddGarbageContainer(GarbageContainer garbageContainer);
+    Task<ContainerLocation> AddContainerLocation(ContainerLocation containerLocation);
+    Task<GarbageContainer> AddGarbageContainer(GarbageContainer garbageContainer);
     
     Task<ContainerLocation> GetContainerLocation(Guid id);
     Task<GarbageContainer> GetGarbageContainer(Guid id);
@@ -14,7 +14,7 @@ public interface IGarbageContainerService
     Task<PaginatedResponse<ContainerLocation>> GetContainerLocations(int page, int pageSize);
     Task<PaginatedResponse<GarbageContainer>> GetGarbageContainers(int page, int pageSize);
     
-    Task<ICollection<GarbageContainer>> GetAllContainerLocations();
+    Task<ICollection<ContainerLocation>> GetAllContainerLocations();
     Task<ICollection<GarbageContainer>> GetAllGarbageContainers();
     
     Task<ContainerLocation> UpdateContainerLocation(Guid id, ContainerLocation containerLocation);

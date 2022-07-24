@@ -1,4 +1,5 @@
 import axios from "../utils/axios";
+import {IUser} from "../types/IUser";
 
 export const loginAccount = async (email: string, password: string) => {
     return (await axios.post('/Account/Login', {
@@ -34,4 +35,8 @@ export const checkEmailTaken = async (email: string) => {
     return (await axios.post<boolean>('/Account/CheckEmailTaken', {
         email,
     })).data;
+}
+
+export const getAllUsers = async () => {
+    return (await axios.get<Array<IUser>>('/Account/GetAllUsers')).data;
 }
