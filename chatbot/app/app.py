@@ -22,6 +22,11 @@ Postavlja kontejnere za otpad ovisno o gustoći naseljenosti.
 Ja sam robot namjenjen odgovaranju na upite korisnika pogonjen openAI gpt-3 transformer mrežom.
 """
 
+context = """
+RiCycle je sustav za upravljanjem otpada koji omogućava korisnicima i administratorima pregled i upravljanje kontejnerima za smeće. Ljudi koji posjete našu stranicu mogu vidjeti sve kontejnere za smeće unutar i oko grada Rijeke. Rijeka je grad u hrvatskoj. Korisnici također mogu naučiti o kodovima za reciklažu ili zbrinjavanje stvari. Administratori mogu dodati koliko vozača je dostupno za prijevoz otpada. Administratori mogu vidjeti rute koje generira naš algoritam. Administratori mogu urediti rute koje algoritam generira kako bi pasao njihovim potrebama. Podaci o gustoći naseljenosti grada prikupljeni su sa OSM (Open Street Map). GPT-3 je omogućio Chat bot. Tim iza RiCycle aplikacije je "haha FER". Tim je izrađen od 4 studenta sa FER-a: Adrian, Karlo, Patrik i Zvonimir. Ovo je razgovor sa chatbotom ove aplikacije RiCycloBot:
+
+"""
+
 question = "Kada će biti smeće pokupljeno kod mene?"
 
 

@@ -40,10 +40,10 @@ const App = () => {
 
             messages.push([
                 newMessage,
-                res.data.response
+                res.data?.response ?? '',
             ])
 
-            addResponseMessage(res.data.response)
+            addResponseMessage(res.data.response ?? '')
         })
 
     };

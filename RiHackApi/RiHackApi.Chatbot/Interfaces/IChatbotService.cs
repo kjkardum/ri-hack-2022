@@ -5,7 +5,7 @@ namespace RiHackApi.Chatbot.Interfaces;
 
 public interface IChatbotService
 {
-    [Post("/chat?APITOKEN=")]
+    [Post("/chat")]
     public Task<ChatbotResponse> SendQuestion(MyQueryParams queryParams, [Body] ChatbotRequest body);
 }
 
