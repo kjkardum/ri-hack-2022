@@ -9,13 +9,14 @@ import { addResponseMessage, Widget } from 'react-chat-widget';
 
 import 'react-chat-widget/lib/styles.css';
 import 'src/theme/overrides/chat_style.css'
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import axios from 'axios';
-import { config } from 'process';
+// import { config } from 'process';
 
-// import chat_logo from 'icons/ricyclobot.svg';
 
 // ----------------------------------------------------------------------
+
+
 
 
 const App = () => {
@@ -31,38 +32,20 @@ const App = () => {
 
         axios.post("http://127.0.0.1:5002/chat?API_KEY=123", {
             params: {
-                "prev_question_and_answers": [],
+                "prev_question_and_answers": messages,
                 "question": newMessage
             }
         }).then(res => {
             // console.log(res.data)
+
+            messages.push([
+                newMessage,
+                res.data.response
+            ])
+
             addResponseMessage(res.data.response)
         })
 
-        // let res = axios({
-        //     method: 'get',
-        //     url: "http://127.0.0.1:5002/chat?API_KEY=123",
-        //     headers: {
-        //         "Accept": "*/*",
-        //         "Content-Type": "*/*"
-        //     },
-        //     data: {
-        //         "prev_question_and_answers": [],
-        //         "question": newMessage
-        //     }
-        // });
-
-        // console.log({
-        //     "prev_question_and_answers": [],
-        //     "question": newMessage
-        // })
-
-        // res.then(data => {
-        //     console.log(data.data);
-        //     addResponseMessage(data.data.response);
-        // })
-
-        // addResponseMessage(newMessage);
     };
 
     return (
@@ -72,9 +55,10 @@ const App = () => {
                 <BaseOptionChartStyle />
                 <Router />
                 <Widget
-                    // profileAvatar={chat_logo}
-                    title="My new awesome title"
-                    subtitle="And my cool subtitle"
+                    spellCheck={false}
+
+                    title="Bok, ja sam RiCycloBot"
+                    subtitle="Možeš me pitati ako te zanima nešto?"
                     handleNewUserMessage={handleNewUserMessage}
                 />
             </ThemeProvider>

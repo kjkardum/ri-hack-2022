@@ -7,6 +7,10 @@ from quoter import Quoter
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
+
 app = Flask(__name__)
 
 optimizer = Optimizer(json.load(open("data/buildings.json")))

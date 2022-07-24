@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 import openai
 import os
@@ -7,6 +8,8 @@ from flask_cors import CORS, cross_origin
 # openai.organization = "Personal"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+
+load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -67,6 +70,9 @@ def chat():
     )
 
     # print(response)
+
+    if response.choices[0].text == "":
+        return jsonify({"repose": "Nemam odgovor na tvoje pitanje :("})
 
     return jsonify({"response": response.choices[0].text})
 
