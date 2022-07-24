@@ -11,6 +11,7 @@ variables:
   AppConfiguration.IsProduction: 'true'
   ConnectionStrings.ApplicationConnection: $(prod_connection_string)
   ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
+  dockerRegistryServiceConnection: '52e45700-e5c2-4088-8055-49664180a631'
   containerRegistry: 'rihackregistry.azurecr.io'
 
 jobs:
@@ -105,7 +106,7 @@ jobs:
   - task: Docker@2
     displayName: Build a docker image
     inputs:
-      containerRegistry: 'rihackregistry.azurecr.io'
+      containerRegistry: '$(dockerRegistryServiceConnection)'
       repository: 'chatbot'
       command: 'build'
       Dockerfile: 'chatbot/app/Dockerfile'
@@ -116,7 +117,7 @@ jobs:
   - task: Docker@2
     displayName: Push an image to container registry
     inputs:
-      containerRegistry: 'rihackregistry.azurecr.io'
+      containerRegistry: '$(dockerRegistryServiceConnection)'
       repository: 'chatbot'
       command: 'push'
       tags: |
