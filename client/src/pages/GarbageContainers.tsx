@@ -146,10 +146,10 @@ export default function GarbageContainers() {
         (async () => {
             let res = await getAllContainerLocations();
 
-            if (res.status !== 200)
+            if (res === null)
                 return enqueueSnackbar("Error fetching container locations", {variant: 'error'});
 
-            setContainerLocaitons(res.data);
+            setContainerLocaitons(res);
         })()
     }, []);
 

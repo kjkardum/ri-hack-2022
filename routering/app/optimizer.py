@@ -51,7 +51,10 @@ class Optimizer:
         """
 
         candidates = random.sample(
-            [(x["lat"], x["lon"]) for x in self.buildings], 100)  # workaround
+            [(x["lat"], x["lon"]) for x in self.buildings], 300)  # workaround
+
+        covered = LpVariable.dicts(
+            "Choice", (range(len(self.buildings))), upBound=5)
 
         covered = LpVariable.dicts(
             "Choice", (range(len(self.buildings))), upBound=10)

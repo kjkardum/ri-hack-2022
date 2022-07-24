@@ -15,7 +15,7 @@ export const getContainerLocaions = async (query: ContainerLocationsQuery) => {
 }
 
 export const getAllContainerLocations = async () => {
-    return await axios.get<Array<IContainerLocation>>('/ContainerLocation');
+    return (await axios.get<Array<IContainerLocation>>('/ContainerLocation')).data;
 }
 
 export const createContainerLocation = async (containerLocation: IContainerLocation) => {

@@ -13,6 +13,7 @@ import DashboardApp from './pages/DashboardApp';
 import HomePage from "./pages/HomePage";
 import ContainerLocations from "./pages/ContainerLocations";
 import GarbageContainers from "./pages/GarbageContainers";
+import UserMap from "./pages/UserMap";
 import Routing from "./pages/Routing";
 
 
@@ -39,6 +40,7 @@ export default function Router() {
         { path: 'login', element: <Login /> },
         { path: 'register', element: <Register /> },
         { path: '404', element: <NotFound /> },
+        { path: 'user_map', element: <UserMap /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],
     },

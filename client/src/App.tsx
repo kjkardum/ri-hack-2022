@@ -9,8 +9,8 @@ import { addResponseMessage, Widget } from 'react-chat-widget';
 
 import 'react-chat-widget/lib/styles.css';
 import 'src/theme/overrides/chat_style.css'
+import axios from "./utils/axios";
 // import { useEffect } from 'react';
-import axios from 'axios';
 // import { config } from 'process';
 
 
@@ -30,7 +30,7 @@ const App = () => {
         // console.log(`New message incoming! ${newMessage}`);
 
 
-        axios.post("http://127.0.0.1:5002/chat?API_KEY=123", {
+        axios.post('Chatbot', {
             params: {
                 "prev_question_and_answers": messages,
                 "question": newMessage
@@ -40,10 +40,10 @@ const App = () => {
 
             messages.push([
                 newMessage,
-                res.data.response
+                res.data?.response ?? '',
             ])
 
-            addResponseMessage(res.data.response)
+            addResponseMessage(res.data.response ?? '')
         })
 
     };

@@ -1,8 +1,15 @@
 import {Map, Layer, NavigationControl, Source, Marker, MapLayerMouseEvent, MarkerDragEvent} from 'react-map-gl';
+
+
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {useEffect, useState} from "react";
 import {Feature, FeatureCollection, GeoJsonProperties, Geometry} from "geojson";
 import {IContainerLocation} from "../types/IContainerLocation";
+
+import mapboxgl from "mapbox-gl"; // This is a dependency of react-map-gl even if you didn't explicitly install it
+
+// eslint-disable-next-line import/no-webpack-loader-syntax
+(mapboxgl as any).workerClass = require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYWN2aWphbm92aWMiLCJhIjoiY2w1eHR5d2R2MHgxdTNqbnFraDF3ZnhwbyJ9.jjyFYZ7yzw0YOfll-vkewQ"
 
@@ -22,7 +29,7 @@ const EditableMap = ({width, height, paths, containers, onAddNewMarker, onUpdate
 
     useEffect(() => {
         setMapContainers(containers);
-    },[containers]);
+    }, [containers]);
 
     const [mapPaths, setMapPaths] = useState<[number, number][]>(paths);
 
@@ -85,19 +92,46 @@ const EditableMap = ({width, height, paths, containers, onAddNewMarker, onUpdate
                     offset={[0, 0]}
                     draggable={true}
                     color={value.type === "candidate" ? "red" : "blue"}
-                    onDragEnd={(event: MarkerDragEvent) => {
+                    onDragEnd={async (event: MarkerDragEvent) => {
+                        if (value.type === "candidate") {
+                            let newCont = await onAddNewMarker({
+                                latitude: event.lngLat.lat,
+                                longitude: event.lngLat.lng,
+                                type: "container"
+                            })
+
+                            if (newCont)
+                                setMapContainers([...mapContainers.filter(c => c.id !== value.id), newCont]);
+
+                            return;
+                        }
+
                         const newPoints: IContainerLocation[] = [...mapContainers];
                         newPoints[index] = {
                             ...newPoints[index],
-                            longitude: event.lngLat[0],
-                            latitude: event.lngLat[1]
+                            longitude: event.lngLat.lat,
+                            latitude: event.lngLat.lng
                         }
                         onUpdateFunc(newPoints[index]);
 
                         setMapContainers(newPoints);
                     }}
-                >
-                </Marker>
+                    onClick={
+                        async () => {
+                            if (value.type === "candidate") {
+                                let newCont = await onAddNewMarker({
+                                    latitude: value.latitude,
+                                    longitude: value.longitude,
+                                    type: "container"
+                                })
+
+                                if (newCont)
+                                    setMapContainers([...mapContainers.filter(c => c.id !== value.id), newCont]);
+                            }
+                        }
+                    }
+
+                />
             ))}
         </Map>
     )

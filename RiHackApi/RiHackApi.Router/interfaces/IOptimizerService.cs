@@ -8,7 +8,15 @@ public interface IOptimizerService
     public Task<List<List<double>>> GetOptimalContainers(int max, MyQueryParams queryParams);
     
     [Get("/vrp/{num_drivers}/{capacity}")]
-    public Task<List<List<GeoJsonLatLon>>> GetOptimizedRoute(int num_drivers, int capacity, MyQueryParams queryParams );
+    public Task<string> GetOptimizedRoute(int num_drivers, int capacity, MyQueryParams queryParams, [Body] RouteOptimizerBody body);
+}
+
+public class RouteOptimizerBody
+{
+    public List<List<double>> Stops { get; set; }
+    public List<int> demands { get; set; }
+    public List<double> depot { get; set; }
+    
 }
 
 public class MyQueryParams
@@ -25,7 +33,13 @@ public class MyQueryParams
 
 public class GeoJsonLatLon
 {
-    public List<List<double>> geojson { get; set; }
-    public double lat  { get; set; }
-    public double lon { get; set; }
+    public List<List<LatLong>> geojson { get; set; }
+    
+}
+
+public class LatLong
+{
+    public List<List<double>>? geojson { get; set; }
+    public double lat { get; set; }
+    public double lng { get; set; }
 }
