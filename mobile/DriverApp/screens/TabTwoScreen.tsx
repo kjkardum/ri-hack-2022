@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
+import { useGlobalStore } from "react-native-global-store"
+
 export default function App() {
+
+  const [globalState, setGlobalState] = useGlobalStore()
+
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
 
@@ -18,13 +23,16 @@ export default function App() {
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
 
+
+
     fetch('https://shallowvigilantruby.nitko12.repl.co/route.json', {
       method: 'GET'
     }).then((response) => response.json())
       .then(json => {
-        localStorage.setItem('route_id', json["route_id"]);
-        localStorage.setItem('route', json["containers"]);
-        alert(JSON.stringify(json));
+
+        setGlobalState({ "id": json["route_id"] })
+
+        // alert(JSON.stringify(json));
       }).catch(error => { });
   };
 

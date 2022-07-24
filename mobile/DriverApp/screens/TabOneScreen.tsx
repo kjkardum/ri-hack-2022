@@ -5,13 +5,14 @@ import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 
+import { useGlobalStore } from "react-native-global-store"
 
 
 const UrlContext = React.createContext("");
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
 
-
+  const [globalState, setGlobalState] = useGlobalStore()
 
   return (
     <View style={styles.container}>
@@ -20,12 +21,11 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       <Text>To open route, scan your admins qr code.</Text>
 
       <View style={styles.container}>
-        <Image
-          style={styles.logo}
-          source={{
-            uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAAAzCAYAAAA6oTAqAAAAEXRFWHRTb2Z0d2FyZQBwbmdjcnVzaEB1SfMAAABQSURBVGje7dSxCQBACARB+2/ab8BEeQNhFi6WSYzYLYudDQYGBgYGBgYGBgYGBgYGBgZmcvDqYGBgmhivGQYGBgYGBgYGBgYGBgYGBgbmQw+P/eMrC5UTVAAAAABJRU5ErkJggg==',
-          }}
-        />
+
+        <Text>
+          {globalState.id || "No route"}
+        </Text>
+
       </View>
 
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
