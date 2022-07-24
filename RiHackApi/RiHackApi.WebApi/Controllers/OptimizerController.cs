@@ -24,7 +24,7 @@ public class OptimizerController : BaseApiController
     }
 
     [HttpGet("placement/{max:int}")]
-    [Authorize(Roles = BaseRoles.Admin)]
+    [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> GetOptimalContainers(int max)
     {
         return Ok(await _optimizerService.GetOptimalContainers(max, _apiKey));
