@@ -23,7 +23,7 @@ const RouteMap = ({width, height, lines, points, onClickFunc}: {
     width: number | string,
     height: number | string
 }) => {
-    console.log(lines[1])
+    console.log(lines);
     return (
         <Map
             initialViewState={{
@@ -40,10 +40,10 @@ const RouteMap = ({width, height, lines, points, onClickFunc}: {
             onClick={(event: MapLayerMouseEvent) => onClickFunc(event)}
         >
             <NavigationControl position="bottom-right"/>
-            F
+
             {lines &&
                 lines.map((values, index, array) =>
-                    (<Source key={index} id="polylineLayer" type="geojson" data={
+                    (<Source key={index} id={`polylineLayer-${index}`} type="geojson" data={
                         {
                             type: "Feature",
                             properties: {},
@@ -54,7 +54,7 @@ const RouteMap = ({width, height, lines, points, onClickFunc}: {
                         }
                     }>
                         <Layer
-                            id="lineLayer"
+                            id={`layer-${index}`}
                             type="line"
                             source="my-data"
                             layout={{
