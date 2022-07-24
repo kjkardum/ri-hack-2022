@@ -23,5 +23,5 @@ export const getGarbageContainer = async (id: string) => {
 }
 
 export const updateGarbageContainer = async (id: string, containerLocation: IGarbageContainer) => {
-    return await axios.put(`/GarbageContainer`, {...containerLocation, id});
+    return await axios.put<IGarbageContainer>(`/GarbageContainer/${id}`, containerLocation);
 }

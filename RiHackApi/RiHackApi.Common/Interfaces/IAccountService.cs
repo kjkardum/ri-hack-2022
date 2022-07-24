@@ -1,6 +1,7 @@
 using RiHackApi.Common.Requests;
 using RiHackApi.Common.Responses;
 using RiHackApi.Common.Wrappers;
+using RiHackApi.Domain.Dtos;
 
 namespace RiHackApi.Common.Interfaces;
 
@@ -15,4 +16,6 @@ public interface IAccountService
     
     Task SetAsAdmin(Guid userId);
     Task RevokeAdmin(Guid userId);
+
+    Task<ICollection<UserDto>> GetAllUsers();
 }

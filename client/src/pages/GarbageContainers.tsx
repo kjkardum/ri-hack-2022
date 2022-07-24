@@ -35,7 +35,12 @@ import {GarbageContainerType, GarbageContainerTypeString, IGarbageContainer} fro
 import * as yup from 'yup';
 import {useFormik} from 'formik';
 import {createContainerLocation, getAllContainerLocations, getContainerLocaions} from "../endpoints/ContainerLocations";
-import {createGarbageContainer, getGarbageContainers} from "../endpoints/GarbageContainer";
+import {
+    createGarbageContainer,
+    getGarbageContainer,
+    getGarbageContainers,
+    updateGarbageContainer
+} from "../endpoints/GarbageContainer";
 
 // ----------------------------------------------------------------------
 
@@ -65,6 +70,7 @@ export default function GarbageContainers() {
     const [rowCount, setRowCount] = useState(0);
     const [rows, setRows] = useState<Array<IGarbageContainer>>([]);
 
+    const [editDialogGarbageContainer, setEditDialogGarbageContainer] = useState<IGarbageContainer | null>(null);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [containerLocaitons, setContainerLocaitons] = useState<IContainerLocation[]>([]);
 
@@ -77,12 +83,29 @@ export default function GarbageContainers() {
         },
         validationSchema: newGarbageContainerValidationSchema,
         onSubmit: async (values) => {
+            if (editDialogGarbageContainer) {
+                let res = await updateGarbageContainer(editDialogGarbageContainer.id, values);
+
+                if (res.status !== 200)
+                    return enqueueSnackbar("Error updating container", {variant: 'error'});
+
+                let index = rows.findIndex(row => row.id === editDialogGarbageContainer.id);
+                if (index !== -1) {
+                    let newRow = {...rows[index], ...res.data};
+                    setRows([newRow, ...rows.filter(row => row.id !== editDialogGarbageContainer.id)]);
+                }
+
+                setEditDialogGarbageContainer(null);
+                setAddDialogOpen(false);
+                return enqueueSnackbar("Garbage container updated", {variant: 'success'});
+            }
+
             let res = await createGarbageContainer(values);
 
             if (res.status !== 200)
                 return enqueueSnackbar("Error creating container location", {variant: 'error'});
 
-            enqueueSnackbar("Container location created", {variant: 'success'});
+            enqueueSnackbar("Garbage container created", {variant: 'success'});
             setRows([...rows, res.data]);
             setAddDialogOpen(false);
         },
@@ -131,9 +154,22 @@ export default function GarbageContainers() {
     }, []);
 
 
-    const handleEdit = (id: number) => {
-//         navigate(`/dashboard/assets/${id}`);
+    const handleEdit = async (id: string) => {
+        let res = await getGarbageContainer(id);
+
+        if (res.status !== 200)
+            return enqueueSnackbar("Error fetching container data", {variant: 'error'});
+
+        setEditDialogGarbageContainer(res.data);
+
+        formik.setFieldValue('label', res.data.label);
+        formik.setFieldValue('type', res.data.type);
+        formik.setFieldValue('maxWeight', res.data.maxWeight);
+        formik.setFieldValue('containerLocationId', res.data.containerLocationId);
+
+        setAddDialogOpen(true);
     }
+
 
 
     const columns: GridColumns<IGarbageContainer> = [
@@ -187,6 +223,7 @@ export default function GarbageContainers() {
                             onChange={(event, value) => {
                                 formik.setFieldValue('containerLocationId', value);
                             }}
+                            value={formik.values.containerLocationId}
                             renderInput={(params) => (
                                 <TextField
                                     {...params} label="Container location" variant="outlined"

@@ -27,5 +27,5 @@ export const getContainerLocation = async (id: string) => {
 }
 
 export const updateContainerLocation = async (id: string, containerLocation: IContainerLocation) => {
-    return await axios.put(`/ContainerLocation`, {...containerLocation, id});
+    return await axios.put<IContainerLocation>(`/ContainerLocation/${id}`, containerLocation);
 }

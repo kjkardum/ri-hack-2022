@@ -47,8 +47,7 @@ public class GarbageContainerController : BaseApiController
     [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> Update(Guid id, GarbageContainer garbageContainer)
     {
-        await _garbageContainerService.UpdateGarbageContainer(id, garbageContainer);
-        return Ok();
+        return Ok(await _garbageContainerService.UpdateGarbageContainer(id, garbageContainer));
     }
     
     [HttpDelete("{id:guid}")]

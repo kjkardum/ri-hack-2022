@@ -29,9 +29,16 @@ import {
 } from "@mui/x-data-grid";
 import {IContainerLocation} from "../types/IContainerLocation";
 import {useSnackbar} from 'notistack';
-import {createContainerLocation, getContainerLocaions} from "../endpoints/ContainerLocations";
+import {
+    createContainerLocation,
+    getContainerLocaions,
+    getContainerLocation,
+    updateContainerLocation
+} from "../endpoints/ContainerLocations";
 import * as yup from 'yup';
 import {useFormik} from 'formik';
+import {IGarbageContainer} from "../types/IGarbageContainer";
+import {getGarbageContainer, updateGarbageContainer} from "../endpoints/GarbageContainer";
 
 
 // ----------------------------------------------------------------------
@@ -59,6 +66,7 @@ export default function ContainerLocations() {
     const [rowCount, setRowCount] = useState(0);
     const [rows, setRows] = useState<Array<IContainerLocation>>([]);
 
+    const [editContainerLocation, setEditContainerLocation] = useState<IContainerLocation | null>(null);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
 
     const formik = useFormik({
@@ -68,6 +76,23 @@ export default function ContainerLocations() {
         },
         validationSchema: newContainerLocationValidationSchema,
         onSubmit: async (values) => {
+            if (editContainerLocation) {
+                let res = await updateContainerLocation(editContainerLocation.id, values);
+
+                if (res.status !== 200)
+                    return enqueueSnackbar("Error updating container location", {variant: 'error'});
+
+                let index = rows.findIndex(row => row.id === editContainerLocation.id);
+                if (index !== -1) {
+                    let newRow = {...rows[index], ...res.data};
+                    setRows([newRow, ...rows.filter(row => row.id !== editContainerLocation.id)]);
+                }
+
+                setEditContainerLocation(null);
+                setAddDialogOpen(false);
+                return enqueueSnackbar("Container location updated", {variant: 'success'});
+            }
+
             let res = await createContainerLocation(values);
 
             if (res.status !== 200 || res.data.id === undefined)
@@ -109,8 +134,17 @@ export default function ContainerLocations() {
         setPage(0);
     }, [sortBy, sortOrder, delayedSearch])
 
-    const handleEdit = (id: number) => {
-//         navigate(`/dashboard/assets/${id}`);
+    const handleEdit = async (id: string) => {
+        let res = await getContainerLocation(id);
+
+        if (res.status !== 200)
+            return enqueueSnackbar("Error fetching container data", {variant: 'error'});
+
+        setEditContainerLocation(res.data);
+
+        formik.setValues(res.data);
+
+        setAddDialogOpen(true);
     }
 
 
