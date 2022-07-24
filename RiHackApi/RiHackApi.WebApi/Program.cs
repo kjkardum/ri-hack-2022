@@ -38,8 +38,8 @@ builder.Services.AddCors(o => o.AddPolicy("default", policy =>
         .WithOrigins(
             "http://localhost:3000",
             "https://localhost:3000",
-            "https://bezimeni.azurewebsites.net",
-            "http://bezimeni.azurewebsites.net")
+            "https://rihack.z6.web.core.windows.net/",
+            "http://rihack.z6.web.core.windows.net/")
         .AllowCredentials()
         .AllowAnyMethod()
         .AllowAnyHeader();
