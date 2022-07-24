@@ -1,8 +1,3 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
 - master
 
@@ -27,7 +22,6 @@ jobs:
     solution: '**/*.sln'
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
-  condition: false
   steps:
   - task: UseDotNet@2
     displayName: 'User .NET 6 Core skd'
@@ -76,7 +70,6 @@ jobs:
   displayName: 'React Client'
   pool:
     name: Default
-  condition: false
   steps:
   - script: npm install -g yarn
     displayName: 'Install yarn'
@@ -106,21 +99,9 @@ jobs:
   displayName: 'GPT3 Chatbot'
   pool:
     name: Default
-  condition: false
   steps:
   - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/chatbot/app/Dockerfile --build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)" -t $(containerRegistry)/chatbot:$(tag) -t $(containerRegistry)/chatbot:latest --platform linux/amd64 $(Build.SourcesDirectory)/chatbot/app
     displayName: Build application
-#  - task: Docker@2
-#    displayName: Build a docker image
-#    inputs:
-#      containerRegistry: '$(dockerRegistryServiceConnection)'
-#      repository: 'chatbot'
-#      command: 'buildx build'
-#      Dockerfile: 'chatbot/app/Dockerfile'
-#      tags: |
-#        $(tag)
-#        latest
-#      arguments: '--build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)"'
   - task: Docker@2
     displayName: Push an image to container registry
     inputs:
