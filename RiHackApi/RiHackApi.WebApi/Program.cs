@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Refit;
 using RiHackApi.Business.Services;
+using RiHackApi.Chatbot.Interfaces;
 using RiHackApi.Common.Interfaces;
 using RiHackApi.Common.Settings;
 using RiHackApi.Identity.Extensions;
@@ -69,6 +70,14 @@ builder.Services.AddRefitClient<IOptimizerService>()
             new Uri(builder
                         .Configuration
                         .GetSection("ApplicationSettings").Get<ApplicationSettings>().OptimizerUrl ??
+                    string.Empty));
+
+builder.Services.AddRefitClient<IChatbotService>()
+    .ConfigureHttpClient(c =>
+        c.BaseAddress =
+            new Uri(builder
+                        .Configuration
+                        .GetSection("ApplicationSettings").Get<ApplicationSettings>().ChatbotUrl ??
                     string.Empty));
 //you could add Polly here to handle HTTP 429 / HTTP 503 etc
 
