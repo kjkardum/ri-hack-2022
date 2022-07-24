@@ -106,6 +106,7 @@ jobs:
   displayName: 'GPT3 Chatbot'
   pool:
     name: Default
+  condition: false
   steps:
   - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/chatbot/app/Dockerfile --build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)" -t $(containerRegistry)/chatbot:$(tag) -t $(containerRegistry)/chatbot:latest --platform linux/amd64 $(Build.SourcesDirectory)/chatbot/app
     displayName: Build application
@@ -135,7 +136,7 @@ jobs:
   pool:
     name: Default
   steps:
-  - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/routering/app/Dockerfile --build-arg API_KEY="$(optimizer_key)" --build-arg -t $(containerRegistry)/routering:$(tag) -t $(containerRegistry)/routering:latest --platform linux/amd64 $(Build.SourcesDirectory)/routering/app
+  - script: DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build -f $(Build.SourcesDirectory)/routering/app/Dockerfile --build-arg API_KEY="$(optimizer_key)" -t $(containerRegistry)/routering:$(tag) -t $(containerRegistry)/routering:latest --platform linux/amd64 $(Build.SourcesDirectory)/routering/app
     displayName: Build application
   - task: Docker@2
     displayName: Push an image to container registry
