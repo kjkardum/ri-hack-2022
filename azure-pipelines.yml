@@ -8,6 +8,8 @@ variables:
   ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
   ApplicationSettings.ChatbotUrl: 'https://ricyclechat.azurewebsites.net/'
   ApplicationSettings.OptimizerUrl: 'https://ricycleoptimizator.azurewebsites.net/'
+  ApplicationSettings.ChatbotApiKey: $(chatbot_key)
+  ApplicationSettings.OptimizerApiKey: $(optimizer_key)
   dockerRegistryServiceConnection: '52e45700-e5c2-4088-8055-49664180a631'
   containerRegistry: 'rihackregistry.azurecr.io'
   tag: '$(Build.BuildId)'
