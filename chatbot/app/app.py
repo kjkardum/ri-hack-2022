@@ -68,6 +68,9 @@ def chat():
 
     # print(response)
 
+    if response.choices[0].text == "":
+        return jsonify({"repose": "Nemam odgovor na tvoje pitanje :("})
+
     return jsonify({"response": response.choices[0].text})
 
     # return jsonify({})
