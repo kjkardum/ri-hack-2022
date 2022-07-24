@@ -7,7 +7,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ARG API_KEY=123
+ENV API_KEY=123
 
 ENTRYPOINT [ \
     "gunicorn", "app:app", \

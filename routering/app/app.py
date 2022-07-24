@@ -56,7 +56,7 @@ def vrp(num_drivers: int, capacity: int):
 
     res = vrp.solve(num_drivers, capacity)
 
-    return jsonify(res)
+    return jsonify(res.values())
 
 
 @app.route("/quote_trip", methods=["GET"])
