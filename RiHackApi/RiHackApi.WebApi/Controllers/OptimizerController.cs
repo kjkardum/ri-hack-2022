@@ -24,7 +24,6 @@ public class OptimizerController : BaseApiController
     }
 
     [HttpGet("placement/{max:int}")]
-    [Authorize(Policy = Policies.RequireAdmin)]
     public async Task<IActionResult> GetOptimalContainers(int max)
     {
         return Ok(await _optimizerService.GetOptimalContainers(max, _apiKey));
@@ -41,14 +40,16 @@ public class OptimizerController : BaseApiController
         {
             Stops = containerLocations.Select(x => new List<double>()
             {
+                x.Longitude,
                 x.Latitude,
-                x.Longitude
+                
             }).ToList(),
             demands = containerLocations.Select(x => 1).ToList(),
             depot = new List<double>()
             {
-                containerLocations.First().Latitude,
-                containerLocations.First().Longitude
+                14.455490,
+                45.333349, 
+
             },
         };
         

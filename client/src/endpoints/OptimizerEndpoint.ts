@@ -20,6 +20,6 @@ export const getOptimalRute = async (dirvers: number, capacity: number): Promise
     }>> = str as unknown;
 
     return data.map((x) => {
-        return x.map((y) => [y.lat, y.lon]);
+        return x.flatMap((y) => y.geojson ?? []);
     });
 }

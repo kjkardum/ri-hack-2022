@@ -44,7 +44,6 @@ class Optimizer:
 
         return [candidates[x] for x in choices if choices[x].value() >= 0.5]
 
-    @lru_cache(maxsize=32)
     def optimize_anywhere(self, max_number: int):
         """
         Returns optimal coordinates to place containers anywhere

@@ -5,16 +5,17 @@ import {styled} from "@mui/material/styles";
 
 import Page from '../components/Page';
 import NativeMap from "../components/NativeMap";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {getAllContainerLocations} from "../endpoints/ContainerLocations";
 
 
-const RootStyle = styled('div')(({ theme }) => ({
+const RootStyle = styled('div')(({theme}) => ({
     [theme.breakpoints.up('md')]: {
         display: 'flex',
     },
 }));
 
-const HeaderStyle = styled('header')(({ theme }) => ({
+const HeaderStyle = styled('header')(({theme}) => ({
     top: 0,
     zIndex: 9,
     lineHeight: 0,
@@ -31,7 +32,19 @@ const HeaderStyle = styled('header')(({ theme }) => ({
 
 
 const UserMap = () => {
-    const [points, setPoints] = useState();
+    const [points, setPoints] = useState<[number, number][]>();
+
+    useEffect(() => {
+        (async () => {
+            const res = await getAllContainerLocations();
+
+            if(res === null)
+                return;
+
+            setPoints(res.map(({latitude, longitude}) => [longitude, latitude]));
+
+        })();
+    }, []);
 
     return (
         <Page title="Home">
@@ -39,7 +52,7 @@ const UserMap = () => {
                 <HeaderStyle>
                     <Logo sx={{opacity: 0}}/>
 
-                    <Typography variant="body2" sx={{ mt: { md: -2 } }}>
+                    <Typography variant="body2" sx={{mt: {md: -2}}}>
                         Working for RiCycle? {''}
                         <Link variant="subtitle2" component={RouterLink} to="/login">
                             Login
@@ -49,16 +62,18 @@ const UserMap = () => {
                 </HeaderStyle>
             </RootStyle>
 
-            <Typography textAlign={"center"} variant={"h2"} sx={{color: "#1c6e46", marginTop: "20px", marginBottom: "40px"}}>
+            <Typography textAlign={"center"} variant={"h2"}
+                        sx={{color: "#1c6e46", marginTop: "20px", marginBottom: "40px"}}>
                 Container Maps
             </Typography>
-            
+
             <Grid container
                   direction="row"
                   justifyContent="center"
                   alignItems="center">
                 <Grid item lg={11} md={11} sm={11} xs={11}>
-                    <NativeMap lines={[]} points={[]} onClickFunc={() => {}} width={"100%"} height={"70vh"} />
+                    <NativeMap lines={[]} points={points} onClickFunc={() => {
+                    }} width={"100%"} height={"70vh"}/>
                 </Grid>
             </Grid>
         </Page>
