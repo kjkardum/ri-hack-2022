@@ -22,7 +22,7 @@ const EditableMap = ({width, height, paths, containers, onAddNewMarker, onUpdate
 
     useEffect(() => {
         setMapContainers(containers);
-    },[containers]);
+    }, [containers]);
 
     const [mapPaths, setMapPaths] = useState<[number, number][]>(paths);
 
@@ -85,19 +85,46 @@ const EditableMap = ({width, height, paths, containers, onAddNewMarker, onUpdate
                     offset={[0, 0]}
                     draggable={true}
                     color={value.type === "candidate" ? "red" : "blue"}
-                    onDragEnd={(event: MarkerDragEvent) => {
+                    onDragEnd={async (event: MarkerDragEvent) => {
+                        if (value.type === "candidate") {
+                            let newCont = await onAddNewMarker({
+                                latitude: event.lngLat.lat,
+                                longitude: event.lngLat.lng,
+                                type: "container"
+                            })
+
+                            if (newCont)
+                                setMapContainers([...mapContainers.filter(c => c.id !== value.id), newCont]);
+
+                            return;
+                        }
+
                         const newPoints: IContainerLocation[] = [...mapContainers];
                         newPoints[index] = {
                             ...newPoints[index],
-                            longitude: event.lngLat[0],
-                            latitude: event.lngLat[1]
+                            longitude: event.lngLat.lat,
+                            latitude: event.lngLat.lng
                         }
                         onUpdateFunc(newPoints[index]);
 
                         setMapContainers(newPoints);
                     }}
-                >
-                </Marker>
+                    onClick={
+                        async () => {
+                            if (value.type === "candidate") {
+                                let newCont = await onAddNewMarker({
+                                    latitude: value.latitude,
+                                    longitude: value.longitude,
+                                    type: "container"
+                                })
+
+                                if (newCont)
+                                    setMapContainers([...mapContainers.filter(c => c.id !== value.id), newCont]);
+                            }
+                        }
+                    }
+
+                />
             ))}
         </Map>
     )

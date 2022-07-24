@@ -2,11 +2,12 @@ import {useEffect, useState} from 'react';
 import {Link as RouterLink} from 'react-router-dom';
 // material
 import {
+    Box,
     Button,
-    Card,
+    Card, CircularProgress,
     Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider,
     FormControl,
-    InputLabel,
+    InputLabel, LinearProgress,
     MenuItem,
     Select,
     Stack,
@@ -30,7 +31,7 @@ import {
 import {IContainerLocation} from "../types/IContainerLocation";
 import {useSnackbar} from 'notistack';
 import {
-    createContainerLocation,
+    createContainerLocation, getAllContainerLocations,
     getContainerLocaions,
     getContainerLocation,
     updateContainerLocation
@@ -68,6 +69,7 @@ export default function ContainerLocations() {
     const [pageSize, setPageSize] = useState(20);
     const [rowCount, setRowCount] = useState(0);
     const [rows, setRows] = useState<Array<IContainerLocationType>>([]);
+    const [allMapMarkers, setAllMapMarkers] = useState<Array<IContainerLocationType>>([]);
 
     const [editContainerLocation, setEditContainerLocation] = useState<IContainerLocation | null>(null);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -89,6 +91,7 @@ export default function ContainerLocations() {
                 if (index !== -1) {
                     let newRow = {...rows[index], ...res.data};
                     setRows([newRow, ...rows.filter(row => row.id !== editContainerLocation.id)]);
+                    setAllMapMarkers([newRow, ...allMapMarkers.filter(row => row.id !== editContainerLocation.id)]);
                 }
 
                 setEditContainerLocation(null);
@@ -103,6 +106,7 @@ export default function ContainerLocations() {
 
             enqueueSnackbar("Container location created", {variant: 'success'});
             setRows([...rows, res.data]);
+            setAllMapMarkers([...allMapMarkers, res.data]);
             setAddDialogOpen(false);
         },
     });
@@ -123,7 +127,12 @@ export default function ContainerLocations() {
                 throw new Error("No data returned");
 
             setRows(data.data);
+            setAllMapMarkers(data.data);
             setRowCount(data.count);
+
+            const allData = await getAllContainerLocations();
+            setAllMapMarkers(allData);
+
         } catch (e) {
             enqueueSnackbar("Error fetching data", {variant: 'error'});
         } finally {
@@ -159,44 +168,73 @@ export default function ContainerLocations() {
 
     const [countainerCountDialogOpen, setContainerCountDialogOpen] = useState(false);
     const [containerCount, setContainerCount] = useState(0);
+    const [loadedOptimalPoints, setLoadedOptimalPoints] = useState(false);
+    const [loadingOptimalPoints, setLoadingOptimalPoints] = useState(false);
+
     return (
         <Page title="User">
-            <Dialog open={countainerCountDialogOpen} onClose={() => setContainerCountDialogOpen(false)}>
-                <DialogTitle>Optimize Containers</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        This will generate provisional container positions, that are considered to be optimal,
-                        based on available data.
-                    </DialogContentText>
+            <Dialog open={countainerCountDialogOpen} onClose={() => setContainerCountDialogOpen(false)}
+                    maxWidth={"xl"}>
+                <Box minWidth={"40vw"}
+                     minHeight={"30vh"}
+                >
+                    <DialogTitle>Optimize Containers</DialogTitle>
+                    {loadingOptimalPoints ? <LinearProgress/> : <>
+                        <DialogContent>
+                            <DialogContentText>
+                                This will generate provisional container positions, that are considered to be optimal,
+                                based on available data.
+                            </DialogContentText>
 
-                    <TextField
-                        label="Number of containers"
-                        value={containerCount}
-                        onChange={(e) => setContainerCount(parseInt(e.target.value))}
-                        type="number"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setContainerCountDialogOpen(false)} color="primary">
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={async () => {
-                            let optimals = await getOptimalContainers(10);
+                            <TextField
+                                sx={{marginTop: "2rem"}}
+                                label="Number of containers"
+                                value={containerCount}
+                                onChange={(e) => setContainerCount(parseInt(e.target.value))}
+                                type="number"
+                            />
+                        </DialogContent>
 
-                            if (optimals === null)
-                                return enqueueSnackbar("Error fetching optimal containers", {variant: 'error'});
+                        <DialogActions>
+                            <Button onClick={() => setContainerCountDialogOpen(false)} color="primary">
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    setLoadingOptimalPoints(true);
 
-                            setRows([...rows,
-                                ...optimals.map((o, i) => ({
-                                    id: `provisional_${i}`,
-                                    latitude: o[0],
-                                    longitude: o[1],
-                                    type: "candidate"
-                                } as unknown as IContainerLocation))]);
-                        }}
-                    ></Button>
-                </DialogActions>
+                                    let optimals = await getOptimalContainers(containerCount);
+
+                                    if (optimals === null)
+                                        return enqueueSnackbar("Error fetching optimal containers", {variant: 'error'});
+
+                                    enqueueSnackbar("Optimal containers loaded", {variant: 'success'});
+
+                                    setRows([...rows,
+                                        ...optimals.map((o, i) => ({
+                                            id: `provisional_${i}`,
+                                            latitude: o[0],
+                                            longitude: o[1],
+                                            type: "candidate"
+                                        } as unknown as IContainerLocation))]);
+
+                                    setAllMapMarkers([...allMapMarkers,
+                                        ...optimals.map((o, i) => ({
+                                            id: `provisional_${i}`,
+                                            latitude: o[0],
+                                            longitude: o[1],
+                                            type: "candidate"
+                                        } as unknown as IContainerLocation))]);
+
+                                    setLoadingOptimalPoints(false);
+                                    setLoadedOptimalPoints(true);
+                                    setContainerCountDialogOpen(false);
+
+                                }}
+                            >Submit</Button>
+                        </DialogActions>
+                    </>}
+                </Box>
             </Dialog>
 
 
@@ -297,17 +335,51 @@ export default function ContainerLocations() {
                     <Typography variant="h4" gutterBottom>
                         Map
                     </Typography>
-                    <Button variant="contained" component={RouterLink} to="#"
-                            startIcon={<Iconify icon="majesticons:map-marker-path-line"/>} onClick={
-                        () => setContainerCountDialogOpen(true)
-                    }>
+
+                    {loadedOptimalPoints && <Button variant="contained" component={RouterLink} to="#"
+                                                    startIcon={<Iconify icon="majesticons:map-marker-path-line"/>}
+                                                    onClick={
+                                                        async () => {
+                                                            let res = await Promise.all(allMapMarkers.map(({
+                                                                                                               latitude,
+                                                                                                               longitude
+                                                                                                           }) => {
+                                                                return createContainerLocation({latitude, longitude});
+                                                            }));
+
+                                                            if (res === null)
+                                                                return enqueueSnackbar("Error creating container locations", {variant: 'error'});
+
+                                                            setAllMapMarkers([
+                                                                ...allMapMarkers.filter(({id}) => !id.startsWith("provisional_")),
+                                                                ...res.map((r, i) => ({
+                                                                    id: r.data.id,
+                                                                    latitude: r.data.latitude,
+                                                                    longitude: r.data.longitude,
+
+                                                                }))
+
+                                                            ]);
+
+                                                            enqueueSnackbar("All candidate positions inserterd", {variant: 'success'});
+                                                            setAddDialogOpen(false);
+                                                        }
+                                                    }>
+                        Accept all candidates
+                    </Button>}
+
+                    {!loadedOptimalPoints && <Button variant="contained" component={RouterLink} to="#"
+                                                     startIcon={<Iconify icon="majesticons:map-marker-path-line"/>}
+                                                     onClick={
+                                                         () => setContainerCountDialogOpen(true)
+                                                     }>
                         Get Candidate Locations
-                    </Button>
+                    </Button>}
                 </Stack>
 
                 <EditableMap
                     paths={[]}
-                    containers={rows}
+                    containers={allMapMarkers}
                     onUpdateFunc={async (newContainer) => {
                         let res = await updateContainerLocation(newContainer.id, newContainer);
 
@@ -317,7 +389,8 @@ export default function ContainerLocations() {
                         }
 
                         enqueueSnackbar("Container location updated", {variant: 'success'});
-                        setRows(rows.map(c => c.id === newContainer.id ? res.data : c));
+                        setRows(allMapMarkers.map(c => c.id === newContainer.id ? res.data : c));
+                        setAllMapMarkers(allMapMarkers.map(c => c.id === newContainer.id ? res.data : c));
 
                         return res.data;
                     }}
@@ -331,6 +404,7 @@ export default function ContainerLocations() {
 
                         enqueueSnackbar("Container location created", {variant: 'success'});
                         setRows([...rows, res.data]);
+                        setAllMapMarkers([...allMapMarkers, res.data]);
 
                         return res.data;
                     }}

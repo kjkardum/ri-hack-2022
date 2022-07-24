@@ -51,7 +51,7 @@ class Optimizer:
         """
 
         candidates = random.sample(
-            [(x["lat"], x["lon"]) for x in self.buildings], 100)  # workaround
+            [(x["lat"], x["lon"]) for x in self.buildings], 500)  # workaround
 
         # print(len(candidates))
 
