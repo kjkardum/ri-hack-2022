@@ -7,6 +7,7 @@ import Page from '../components/Page';
 import NativeMap from "../components/NativeMap";
 import {useState} from "react";
 
+
 const RootStyle = styled('div')(({ theme }) => ({
     [theme.breakpoints.up('md')]: {
         display: 'flex',
