@@ -7,10 +7,12 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV API_KEY=123
+ARG API_KEY=123
 
 # SIKE! DODATI OPEN_AI API
-ENV OPENAI_API_KEY=123 
+ARG OPENAI_API_KEY=123 
+
+RUN echo "API_KEY=$API_KEY\nOPENAI_API_KEY=$OPENAI_API_KEY\n" > .env
 
 ENTRYPOINT [ \
     "gunicorn", "app:app", \
