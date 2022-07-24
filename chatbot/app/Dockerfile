@@ -12,6 +12,8 @@ ARG API_KEY=123
 # SIKE! DODATI OPEN_AI API
 ARG OPENAI_API_KEY=123 
 
+RUN echo "API_KEY=$API_KEY\nOPENAI_API_KEY=$OPENAI_API_KEY\n" > .env
+
 ENTRYPOINT [ \
     "gunicorn", "app:app", \
     "-w", "2", \

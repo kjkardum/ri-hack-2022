@@ -11,6 +11,9 @@ variables:
   AppConfiguration.IsProduction: 'true'
   ConnectionStrings.ApplicationConnection: $(prod_connection_string)
   ApplicationSettings.FrontendUrl: 'https://rihack.z6.web.core.windows.net/'
+  dockerRegistryServiceConnection: '52e45700-e5c2-4088-8055-49664180a631'
+  containerRegistry: 'rihackregistry.azurecr.io'
+  tag: '$(Build.BuildId)'
 
 jobs:
 - job: mainBackend
@@ -22,7 +25,7 @@ jobs:
     solution: '**/*.sln'
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
-
+  condition: false
   steps:
   - task: UseDotNet@2
     displayName: 'User .NET 6 Core skd'
@@ -71,6 +74,7 @@ jobs:
   displayName: 'React Client'
   pool:
     name: Default
+  condition: false
   steps:
   - script: npm install -g yarn
     displayName: 'Install yarn'
@@ -96,4 +100,29 @@ jobs:
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: az storage blob upload-batch --connection-string "$(blob_connection_string)" -d '$web' --account-name "rihack" -s client/build/ --overwrite=true
-      
+- job: chatbot
+  displayName: 'GPT3 Chatbot'
+  pool:
+    name: Default
+  steps:
+  - task: Docker@2
+    displayName: Build a docker image
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: 'chatbot'
+      command: 'build'
+      Dockerfile: 'chatbot/app/Dockerfile'
+      tags: |
+        $(tag)
+        latest
+      arguments: '--build-arg API_KEY="$(chatbot_key)" --build-arg OPENAI_API_KEY="$(openapi_key)"'
+  - task: Docker@2
+    displayName: Push an image to container registry
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: 'chatbot'
+      command: 'push'
+      tags: |
+        $(tag)
+        latest
+  
