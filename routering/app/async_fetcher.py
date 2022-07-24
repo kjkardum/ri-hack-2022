@@ -1,7 +1,7 @@
 import asyncio
 from aiohttp import ClientSession, ClientConnectorError
 
-OSRM_URL = "http://localhost:5001"
+OSRM_URL = "http://osrm:5001"
 
 
 class Async_Fetcher:
